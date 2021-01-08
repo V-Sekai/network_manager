@@ -416,6 +416,9 @@ signal received_server_state(p_state)
 
 signal received_client_info(p_id, p_info)
 
+signal entity_network_id_registered(p_network_id)
+signal entity_network_id_unregistered(p_network_id)
+
 master func create_server_info() -> void:
 	NetworkLogger.printl("create_server_info...")
 	emit_signal("create_server_info")

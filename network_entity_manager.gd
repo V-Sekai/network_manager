@@ -6,13 +6,15 @@ const network_constants_const = preload("network_constants.gd")
 const network_writer_const = preload("network_writer.gd")
 const network_reader_const = preload("network_reader.gd")
 
+const mutex_lock_const = preload("res://addons/gdutil/mutex_lock.gd")
+var _mutex: Mutex = Mutex.new()
+
 # List of all the packed scenes which can be transferred over the network
 # via small spawn commands
 var networked_scenes: Array = []
 
 # The maximum amount of entities which can be active in a scene at once
 var max_networked_entities: int = 4096  # Default
-
 
 ###############
 # Network ids #
@@ -30,6 +32,13 @@ const LAST_NETWORK_INSTANCE_ID = 4294967295
 var next_network_instance_id: int = FIRST_NETWORK_INSTANCE_ID
 # Map of all currently active instance IDs
 var network_instance_ids: Dictionary = {}
+
+# Returns the corresponding NetworkIdentity node for the id integer
+func _get_network_identity_for_instance_id_unsafe(p_network_instance_id: int) -> Node:
+	if network_instance_ids.has(p_network_instance_id):
+		return network_instance_ids[p_network_instance_id]
+
+	return null
 
 # Writes the index id for the p_entity's base scene as defined in the list
 # of p_networked_scenes to the p_writer. The index byte length is determined
@@ -74,8 +83,14 @@ static func read_entity_network_master(p_reader: network_reader_const) -> int:
 	return p_reader.get_u32()
 
 # Writes the instance id for p_entity to p_writer. Returns the p_writer
-static func write_entity_instance_id(p_entity: entity_const, p_writer: network_writer_const) -> network_writer_const:
+static func write_entity_instance_id_for_entity(p_entity: entity_const, p_writer: network_writer_const) -> network_writer_const:
 	p_writer.put_u32(p_entity.network_identity_node.network_instance_id)
+
+	return p_writer
+	
+# Writes the instance id for p_entity to p_writer. Returns the p_writer
+static func write_entity_instance_id(p_entity_id: int, p_writer: network_writer_const) -> network_writer_const:
+	p_writer.put_u32(p_entity_id)
 
 	return p_writer
 
@@ -87,6 +102,8 @@ static func read_entity_instance_id(p_reader: network_reader_const) -> int:
 
 # Clears all active instance ids
 func reset_server_instances() -> void:
+	var mutex_lock: mutex_lock_const = mutex_lock_const.new(_mutex)
+
 	network_instance_ids = {}
 	next_network_instance_id = FIRST_NETWORK_INSTANCE_ID  # Reset the network id counter
 
@@ -95,6 +112,8 @@ func reset_server_instances() -> void:
 # if it reaches the LAST_NETWORK_INSTANCE_ID, and if one is already in
 # use, it will loop until it finds an unused one. Returns an instance ID
 func get_next_network_id() -> int:
+	var mutex_lock: mutex_lock_const = mutex_lock_const.new(_mutex)
+	
 	var network_instance_id: int = next_network_instance_id
 	next_network_instance_id += 1
 	if next_network_instance_id >= LAST_NETWORK_INSTANCE_ID:
@@ -117,27 +136,49 @@ func get_next_network_id() -> int:
 # TODO: add more graceful error handling for exceeding maximum number of
 # entities
 func register_network_instance_id(p_network_instance_id: int, p_network_idenity: Node) -> void:
+	var mutex_lock: mutex_lock_const = mutex_lock_const.new(_mutex)
+	
+	NetworkLogger.printl("Attempting to register network instance_id {network_instance_id}".format({"network_instance_id": str(p_network_instance_id)}))
+	
 	if network_instance_ids.size() > max_networked_entities:
 		NetworkLogger.error("EXCEEDED MAXIMUM ALLOWED INSTANCE IDS!")
 		return
 
-	network_instance_ids[p_network_instance_id] = p_network_idenity
+	if !network_instance_ids.has(p_network_instance_id):
+		network_instance_ids[p_network_instance_id] = p_network_idenity
+		NetworkManager.emit_signal("entity_network_id_registered", p_network_instance_id)
+	else:
+		printerr("Attempted to register duplicate network instance_id")
 
 
 # Unregisters a network_instance from the network_instance_id map
 func unregister_network_instance_id(p_network_instance_id: int) -> void:
+	var mutex_lock: mutex_lock_const = mutex_lock_const.new(_mutex)
+	
+	NetworkLogger.printl("Attempting to unregister network instance_id {network_instance_id}".format({"network_instance_id": str(p_network_instance_id)}))
+	
 	if ! network_instance_ids.erase(p_network_instance_id):
 		NetworkLogger.error(
 			"Could not unregister network instance id: {network_instance_id}".format(
 				{"network_instance_id": str(p_network_instance_id)}
 			)
 		)
+	NetworkManager.emit_signal("entity_network_id_unregistered", p_network_instance_id)
 
 
 # Returns the network identity node for a given network instance id
-func get_network_instance_identity(p_network_instance_id: int) -> Node:
-	if network_instance_ids.has(p_network_instance_id):
-		return network_instance_ids[p_network_instance_id]
+func get_network_identity_for_instance_id(p_network_instance_id: int) -> Node:
+	var mutex_lock: mutex_lock_const = mutex_lock_const.new(_mutex)
+
+	return _get_network_identity_for_instance_id_unsafe(p_network_instance_id)
+	
+# Returns the network identity node for a given network instance id
+func get_network_instance_for_instance_id(p_network_instance_id: int) -> Node:
+	var mutex_lock: mutex_lock_const = mutex_lock_const.new(_mutex)
+
+	var identity_node: Node = _get_network_identity_for_instance_id_unsafe(p_network_instance_id)
+	if identity_node:
+		return identity_node.get_entity_node()
 
 	return null
 

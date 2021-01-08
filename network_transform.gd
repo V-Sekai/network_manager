@@ -128,7 +128,7 @@ func process_parenting():
 		parent_entity_is_valid = true
 		if parent_id != network_entity_manager_const.NULL_NETWORK_INSTANCE_ID:
 			if NetworkManager.network_entity_manager.network_instance_ids.has(parent_id):
-				var network_identity: Node = NetworkManager.network_entity_manager.get_network_instance_identity(
+				var network_identity: Node = NetworkManager.network_entity_manager.get_network_identity_for_instance_id(
 					parent_id
 				)
 				if network_identity:
@@ -151,14 +151,13 @@ func _entity_physics_process(_delta: float) -> void:
 
 func _entity_ready() -> void:
 	._entity_ready()
+	if received_data:
+		if ! is_network_master():
+			process_parenting()
+			if parent_entity_is_valid:
+				update_transform(Transform(Basis(current_rotation), current_origin))
+		received_data = false
 
 
 func _entity_about_to_add() -> void:
 	._entity_about_to_add()
-	if ! Engine.is_editor_hint():
-		if received_data:
-			if ! is_network_master():
-				process_parenting()
-				if parent_entity_is_valid:
-					update_transform(Transform(Basis(current_rotation), current_origin))
-			received_data = false

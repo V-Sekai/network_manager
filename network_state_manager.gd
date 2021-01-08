@@ -57,7 +57,7 @@ Server
 
 func write_entity_update_command(p_entity: entity_const, p_network_writer: network_writer_const) -> network_writer_const:
 	p_network_writer = NetworkManager.network_entity_manager.write_entity_instance_id(
-		p_entity, p_network_writer
+		p_entity.network_identity_node.network_instance_id, p_network_writer
 	)
 	var entity_state: network_writer_const = p_entity.network_identity_node.get_state(null, false)
 	var entity_state_size = entity_state.get_position()

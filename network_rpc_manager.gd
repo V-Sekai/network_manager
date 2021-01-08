@@ -89,7 +89,7 @@ func write_entity_rpc_command(p_sender_id: int, p_call: Dictionary, p_network_wr
 		else:
 			p_network_writer.put_32(p_call["target_id"])
 
-	p_network_writer = network_entity_manager.write_entity_instance_id(
+	p_network_writer = network_entity_manager.write_entity_instance_id_for_entity(
 		p_call["entity"], p_network_writer
 	)
 			
@@ -110,7 +110,7 @@ func write_entity_rset_command(p_sender_id: int, p_call: Dictionary, p_network_w
 		else:
 			p_network_writer.put_32(p_call["target_id"])
 
-	p_network_writer = network_entity_manager.write_entity_instance_id(
+	p_network_writer = network_entity_manager.write_entity_instance_id_for_entity(
 		p_call.entity, p_network_writer
 	)
 

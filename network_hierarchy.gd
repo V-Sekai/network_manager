@@ -47,7 +47,7 @@ func process_parenting():
 		parent_entity_is_valid = true
 		if parent_id != network_entity_manager_const.NULL_NETWORK_INSTANCE_ID:
 			if NetworkManager.network_entity_manager.network_instance_ids.has(parent_id):
-				var network_identity: Node = NetworkManager.network_entity_manager.get_network_instance_identity(
+				var network_identity: Node = NetworkManager.network_entity_manager.get_network_identity_for_instance_id(
 					parent_id
 				)
 				if network_identity:

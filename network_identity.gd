@@ -34,9 +34,10 @@ func set_network_scene_id(p_id: int) -> void:
 			NetworkLogger.error("network_scene_id has already been assigned")
 
 
-func on_exit() -> void:
+func on_predelete() -> void:
 	if ! Engine.is_editor_hint():
-		NetworkManager.network_entity_manager.unregister_network_instance_id(network_instance_id)
+		if network_instance_id != network_entity_manager_const.NULL_NETWORK_INSTANCE_ID:
+			NetworkManager.network_entity_manager.unregister_network_instance_id(network_instance_id)
 
 
 func get_state(p_writer: network_writer_const, p_initial_state: bool) -> network_writer_const:
@@ -71,6 +72,7 @@ func _entity_ready() -> void:
 			# This is a bad approach, we should be purging entities for the clients
 			# BEFORE they are instantiated, but this will do for now...
 			if ! entity_node.get_name().begins_with("NetEntity"):
+				print("Client deleting entity node %s" % entity_node.get_name())
 				entity_node.queue_free()
 				return
 
@@ -81,10 +83,13 @@ func _entity_ready() -> void:
 		)
 
 		entity_node.add_to_group("NetworkedEntities")
-		if entity_node.connect("entity_deletion", self, "on_exit") != OK:
-			NetworkLogger.error("Could not connect entity_deletion!")
 
 
 func _threaded_instance_setup(p_instance_id: int, p_network_reader: Reference) -> void:
 	set_network_instance_id(p_instance_id)
 	update_state(p_network_reader, true)
+
+func _notification(what):
+	match what:
+		NOTIFICATION_PREDELETE:
+			on_predelete()
