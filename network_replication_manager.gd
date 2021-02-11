@@ -468,7 +468,8 @@ func decode_entity_spawn_command(p_packet_sender_id: int, p_network_reader: netw
 	EntityManager.scene_tree_execution_command(
 		EntityManager.scene_tree_execution_table_const.ADD_ENTITY,
 		entity_instance,
-		entity_instance.cached_entity_parent
+		entity_instance.hierarchy_component_node.cached_entity_parent\
+		if entity_instance.hierarchy_component_node else null
 	)
 
 	return p_network_reader

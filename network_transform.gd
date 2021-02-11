@@ -41,10 +41,10 @@ func update_transform(p_transform: Transform) -> void:
 
 func serialize_hierarchy(p_writer: network_writer_const) -> network_writer_const:
 	if sync_parent:
-		p_writer = network_hierarchy_const.write_entity_parent_id(p_writer, entity_node)
+		p_writer = network_hierarchy_const.write_entity_parent_id(p_writer, entity_node.hierarchy_component_node)
 		if sync_attachment:
-			if entity_node.get_entity_parent():
-				network_hierarchy_const.write_entity_attachment_id(p_writer, entity_node)
+			if entity_node.hierarchy_component_node.get_entity_parent():
+				network_hierarchy_const.write_entity_attachment_id(p_writer, entity_node.hierarchy_component_node)
 	return p_writer
 
 func on_serialize(p_writer: network_writer_const, p_initial_state: bool) -> network_writer_const:
@@ -133,12 +133,15 @@ func process_parenting():
 				)
 				if network_identity:
 					var parent_instance: Node = network_identity.get_entity_node()
-					entity_node.request_reparent_entity(parent_instance.get_entity_ref(), attachment_id)
+					if entity_node.hierarchy_component_node:
+						entity_node.hierarchy_component_node.request_reparent_entity(parent_instance.get_entity_ref(), attachment_id)
 			else:
 				parent_entity_is_valid = false
-				entity_node.request_reparent_entity(null, attachment_id)
+				if entity_node.hierarchy_component_node:
+					entity_node.hierarchy_component_node.request_reparent_entity(null, attachment_id)
 		else:
-			entity_node.request_reparent_entity(null, attachment_id)
+			if entity_node.hierarchy_component_node:
+				entity_node.hierarchy_component_node.request_reparent_entity(null, attachment_id)
 
 
 func _entity_physics_process(_delta: float) -> void:
