@@ -174,8 +174,12 @@ func sanitise_rpc() -> void:
 
 
 func _ready():
-	sender_id = get_tree().multiplayer.get_network_unique_id()
+	if !Engine.is_editor_hint() and get_tree().has_network_peer():
+		sender_id = get_tree().multiplayer.get_network_unique_id()
+	else:
+		sender_id = -1
 
 
 func _init():
-	sanitise_rpc()
+	if !Engine.is_editor_hint():
+		sanitise_rpc()
