@@ -5,14 +5,12 @@ tool
 const math_funcs_const = preload("res://addons/math_util/math_funcs.gd")
 const network_entity_manager_const = preload("res://addons/network_manager/network_entity_manager.gd")
 
-signal mass_changed(p_mass)
-
 
 func on_serialize(p_writer: network_writer_const, p_initial_state: bool) -> network_writer_const:
-	var physics_node_root = entity_node.simulation_logic_node.physics_node_root
+	var physics_node_root = entity_node.simulation_logic_node.get_physics_node()
 
 	if p_initial_state:
-		p_writer.put_float(physics_node_root.mass)
+		p_writer.put_float(physics_node_root.get_mass())
 
 	var sleeping: bool = (
 		physics_node_root.sleeping
@@ -31,10 +29,10 @@ func on_serialize(p_writer: network_writer_const, p_initial_state: bool) -> netw
 func on_deserialize(p_reader: network_reader_const, p_initial_state: bool) -> network_reader_const:
 	received_data = true
 
-	var physics_node_root = entity_node.simulation_logic_node.physics_node_root
+	var physics_node_root = entity_node.simulation_logic_node.get_physics_node()
 
 	if p_initial_state:
-		physics_node_root.mass = p_reader.get_float()
+		physics_node_root.set_mass(p_reader.get_float())
 
 	var sleeping: bool = p_reader.get_8()
 	physics_node_root.sleeping = sleeping

@@ -189,8 +189,8 @@ func decode_entity_update_command(p_packet_sender_id: int, p_network_reader: net
 			else:
 				invalid_sender_id = true
 
-		#if invalid_sender_id:
-		#	NetworkLogger.error("Invalid state update sender id {packet_sender_id}!".format({"packet_sender_id":str(p_packet_sender_id)}))
+		if invalid_sender_id:
+			NetworkLogger.error("Invalid state update sender id {packet_sender_id}!".format({"packet_sender_id":str(p_packet_sender_id)}))
 	else:
 		p_network_reader.seek(p_network_reader.get_position() + entity_state_size)
 

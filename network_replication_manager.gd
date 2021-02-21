@@ -212,11 +212,8 @@ func create_spawn_state_for_new_client(p_network_id: int) -> void:
 	EntityManager.scene_tree_execution_table._execute_scene_tree_execution_table_unsafe()
 
 	var ignore_list: Array = []
-
-	var network_entity_manager: Node = NetworkManager.network_entity_manager
 	
 	var entities: Array = get_tree().get_nodes_in_group("NetworkedEntities")
-	var entity_spawn_writers: Array = []
 
 	var network_writer_state: network_writer_const = null
 
@@ -467,9 +464,7 @@ func decode_entity_spawn_command(p_packet_sender_id: int, p_network_reader: netw
 
 	EntityManager.scene_tree_execution_command(
 		EntityManager.scene_tree_execution_table_const.ADD_ENTITY,
-		entity_instance,
-		entity_instance.hierarchy_component_node.cached_entity_parent\
-		if entity_instance.hierarchy_component_node else null
+		entity_instance
 	)
 
 	return p_network_reader
@@ -505,8 +500,7 @@ func decode_entity_destroy_command(p_packet_sender_id: int, p_network_reader: ne
 		var entity_instance: Node = network_entity_manager.get_network_instance_for_instance_id(instance_id)
 		EntityManager.scene_tree_execution_command(
 			EntityManager.scene_tree_execution_table_const.REMOVE_ENTITY,
-			entity_instance,
-			null
+			entity_instance
 		)
 	else:
 		NetworkLogger.error("Attempted to destroy invalid node")

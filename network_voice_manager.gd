@@ -134,9 +134,7 @@ func decode_voice_command(p_packet_sender_id: int, p_network_reader: network_rea
 					)
 
 	if ! NetworkManager.server_dedicated:
-		NetworkManager.emit_signal(
-			"voice_packet_compressed", sender_id, encoded_sequence_id, encoded_voice_byte_array
-		)
+		NetworkManager.voice_packet_compressed(sender_id, encoded_sequence_id, encoded_voice_byte_array)
 
 	return p_network_reader
 

@@ -91,8 +91,6 @@ func _nm_rpcp(p_peer_id: int, p_unreliable: bool, p_method: String, p_arg_array:
 				callv(p_method, p_arg_array)
 			method_id = i
 
-	var foo = get_entity_node()
-
 	if method_id >= 0:
 		if p_unreliable:
 			NetworkManager.network_rpc_manager.queue_unreliable_rpc_call(get_entity_node(), p_peer_id, method_id, p_arg_array)

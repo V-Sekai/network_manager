@@ -71,7 +71,7 @@ func put_24(p_value: int) -> void:
 	var value_buffer: PoolByteArray = encode_24_bit_value(p_value)
 	if stream_peer_buffer.big_endian:
 		value_buffer.invert()
-	stream_peer_buffer.put_data(value_buffer)
+	put_data(value_buffer)
 
 
 func put_32(p_value: int) -> void:

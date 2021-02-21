@@ -87,7 +87,7 @@ func _entity_ready() -> void:
 
 func _threaded_instance_setup(p_instance_id: int, p_network_reader: Reference) -> void:
 	set_network_instance_id(p_instance_id)
-	update_state(p_network_reader, true)
+	p_network_reader = update_state(p_network_reader, true)
 
 func _notification(what):
 	match what:

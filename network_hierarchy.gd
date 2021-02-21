@@ -33,7 +33,7 @@ static func decode_attachment_id(p_reader: network_reader_const) -> int:
 
 static func write_entity_parent_id(p_writer: network_writer_const, p_entity_hierarchy_node: Node) -> network_writer_const:
 	if p_entity_hierarchy_node and p_entity_hierarchy_node.get_entity_parent():
-		encode_parent_id(p_writer, p_entity_hierarchy_node.get_entity_parent().network_identity_node.network_instance_id)
+		p_writer = encode_parent_id(p_writer, p_entity_hierarchy_node.get_entity_parent().network_identity_node.network_instance_id)
 	else:
 		p_writer.put_u32(NetworkManager.network_entity_manager.NULL_NETWORK_INSTANCE_ID)
 
@@ -42,9 +42,9 @@ static func write_entity_parent_id(p_writer: network_writer_const, p_entity_hier
 
 static func write_entity_attachment_id(p_writer: network_writer_const, p_entity_hierarchy_node: Node) -> network_writer_const:
 	if p_entity_hierarchy_node:
-		encode_attachment_id(p_writer, p_entity_hierarchy_node.cached_entity_attachment_id)
+		p_writer = encode_attachment_id(p_writer, p_entity_hierarchy_node.cached_entity_attachment_id)
 	else:
-		encode_attachment_id(p_writer, 0)
+		p_writer = encode_attachment_id(p_writer, 0)
 	return p_writer
 
 
@@ -61,7 +61,7 @@ func serialize_hierarchy(p_writer: network_writer_const) -> network_writer_const
 		p_writer = write_entity_parent_id(p_writer, entity_node.hierarchy_component_node)
 		if sync_attachment:
 			if entity_node.hierarchy_component_node.get_entity_parent():
-				write_entity_attachment_id(p_writer, entity_node.hierarchy_component_node)
+				p_writer = write_entity_attachment_id(p_writer, entity_node.hierarchy_component_node)
 	return p_writer
 
 

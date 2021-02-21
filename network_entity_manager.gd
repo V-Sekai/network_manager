@@ -102,7 +102,7 @@ static func read_entity_instance_id(p_reader: network_reader_const) -> int:
 
 # Clears all active instance ids
 func reset_server_instances() -> void:
-	var mutex_lock: mutex_lock_const = mutex_lock_const.new(_mutex)
+	var _mutex_lock: mutex_lock_const = mutex_lock_const.new(_mutex)
 
 	network_instance_ids = {}
 	next_network_instance_id = FIRST_NETWORK_INSTANCE_ID  # Reset the network id counter
@@ -112,7 +112,7 @@ func reset_server_instances() -> void:
 # if it reaches the LAST_NETWORK_INSTANCE_ID, and if one is already in
 # use, it will loop until it finds an unused one. Returns an instance ID
 func get_next_network_id() -> int:
-	var mutex_lock: mutex_lock_const = mutex_lock_const.new(_mutex)
+	var _mutex_lock: mutex_lock_const = mutex_lock_const.new(_mutex)
 	
 	var network_instance_id: int = next_network_instance_id
 	next_network_instance_id += 1
@@ -136,7 +136,7 @@ func get_next_network_id() -> int:
 # TODO: add more graceful error handling for exceeding maximum number of
 # entities
 func register_network_instance_id(p_network_instance_id: int, p_network_idenity: Node) -> void:
-	var mutex_lock: mutex_lock_const = mutex_lock_const.new(_mutex)
+	var _mutex_lock: mutex_lock_const = mutex_lock_const.new(_mutex)
 	
 	NetworkLogger.printl("Attempting to register network instance_id {network_instance_id}".format({"network_instance_id": str(p_network_instance_id)}))
 	
@@ -146,14 +146,14 @@ func register_network_instance_id(p_network_instance_id: int, p_network_idenity:
 
 	if !network_instance_ids.has(p_network_instance_id):
 		network_instance_ids[p_network_instance_id] = p_network_idenity
-		NetworkManager.emit_signal("entity_network_id_registered", p_network_instance_id)
+		NetworkManager.entity_network_id_registered(p_network_instance_id)
 	else:
 		printerr("Attempted to register duplicate network instance_id")
 
 
 # Unregisters a network_instance from the network_instance_id map
 func unregister_network_instance_id(p_network_instance_id: int) -> void:
-	var mutex_lock: mutex_lock_const = mutex_lock_const.new(_mutex)
+	var _mutex_lock: mutex_lock_const = mutex_lock_const.new(_mutex)
 	
 	NetworkLogger.printl("Attempting to unregister network instance_id {network_instance_id}".format({"network_instance_id": str(p_network_instance_id)}))
 	
@@ -163,18 +163,18 @@ func unregister_network_instance_id(p_network_instance_id: int) -> void:
 				{"network_instance_id": str(p_network_instance_id)}
 			)
 		)
-	NetworkManager.emit_signal("entity_network_id_unregistered", p_network_instance_id)
+	NetworkManager.entity_network_id_unregistered(p_network_instance_id)
 
 
 # Returns the network identity node for a given network instance id
 func get_network_identity_for_instance_id(p_network_instance_id: int) -> Node:
-	var mutex_lock: mutex_lock_const = mutex_lock_const.new(_mutex)
+	var _mutex_lock: mutex_lock_const = mutex_lock_const.new(_mutex)
 
 	return _get_network_identity_for_instance_id_unsafe(p_network_instance_id)
 	
 # Returns the network identity node for a given network instance id
 func get_network_instance_for_instance_id(p_network_instance_id: int) -> Node:
-	var mutex_lock: mutex_lock_const = mutex_lock_const.new(_mutex)
+	var _mutex_lock: mutex_lock_const = mutex_lock_const.new(_mutex)
 
 	var identity_node: Node = _get_network_identity_for_instance_id_unsafe(p_network_instance_id)
 	if identity_node:

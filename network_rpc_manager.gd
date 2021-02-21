@@ -270,7 +270,7 @@ func decode_entity_remote_command(p_packet_sender_id: int, p_reliable: bool, p_r
 		return null
 
 	var args: Array = []
-	for i in range(0, arg_count):
+	for _i in range(0, arg_count):
 		var arg = p_network_reader.get_var()
 
 		if p_network_reader.is_eof():

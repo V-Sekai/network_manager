@@ -64,21 +64,23 @@ func disconnect_command(p_disconnected_peer_id: int) -> void:
 func session_master_command(p_id: int, p_new_master: int) -> void:
 	var network_writer: network_writer_const = network_handshake_command_writer_cache
 	network_writer.seek(0)
-
+	
 	network_writer.put_u8(network_constants_const.MASTER_COMMAND)
 	network_writer.put_u32(p_new_master)
-
+	
 	if network_writer.get_position() > 0:
 		var raw_data: PoolByteArray = network_writer.get_raw_data(network_writer.get_position())
 		NetworkManager.network_flow_manager.queue_packet_for_send(
 			ref_pool_const.new(raw_data), p_id, NetworkedMultiplayerPeer.TRANSFER_MODE_RELIABLE
 		)
 
+
 func attempt_to_send_server_state_to_peer(p_peer_id: int):
 	if NetworkManager.server_state_ready:
 		if NetworkManager.peer_data[p_peer_id]["validation_state"] == NetworkManager.network_constants_const.validation_state_enum.VALIDATION_STATE_AWAITING_STATE:
 			NetworkManager.peer_data[p_peer_id]["validation_state"] = NetworkManager.network_constants_const.validation_state_enum.VALIDATION_STATE_STATE_SENT
-			NetworkManager.emit_signal("requested_server_state", p_peer_id)
+			NetworkManager.requested_server_state(p_peer_id)
+
 
 # Called by the client once the server has confirmed they have been validated
 master func requested_server_info(p_client_info: Dictionary) -> void:
@@ -88,13 +90,14 @@ master func requested_server_info(p_client_info: Dictionary) -> void:
 	NetworkManager.received_peer_validation_state_update(rpc_sender_id,\
 	network_constants_const.validation_state_enum.VALIDATION_STATE_INFO_SENT)
 	
-	NetworkManager.emit_signal("received_client_info", rpc_sender_id, p_client_info)
-	NetworkManager.emit_signal("requested_server_info", rpc_sender_id)
+	NetworkManager.received_client_info(rpc_sender_id, p_client_info)
+	NetworkManager.requested_server_info(rpc_sender_id)
+
 
 # Called by the server 
 puppet func received_server_info(p_server_info: Dictionary) -> void:
 	NetworkLogger.printl("received_server_info...")
-
+	
 	if p_server_info.has("server_type"):
 		var server_type = p_server_info["server_type"]
 		if server_type is String:
@@ -102,12 +105,12 @@ puppet func received_server_info(p_server_info: Dictionary) -> void:
 				NetworkManager.network_constants_const.RELAY_SERVER_NAME:
 					NetworkLogger.printl("Connected to a relay server...")
 					NetworkManager.set_relay(true)
-					NetworkManager.emit_signal("received_server_info", p_server_info)
+					NetworkManager.received_server_info(p_server_info)
 					return
 				NetworkManager.network_constants_const.AUTHORITATIVE_SERVER_NAME:
 					NetworkLogger.printl("Connected to a authoritative server...")
 					NetworkManager.set_relay(false)
-					NetworkManager.emit_signal("received_server_info", p_server_info)
+					NetworkManager.received_server_info(p_server_info)
 					return
 				_:
 					NetworkLogger.error("Unknown server type")
@@ -115,32 +118,28 @@ puppet func received_server_info(p_server_info: Dictionary) -> void:
 			NetworkLogger.error("Server type is not a string")
 
 	NetworkManager.request_network_kill()
-	
+
+
 puppet func received_client_info(p_client: int, p_client_info: Dictionary) -> void:
 	NetworkLogger.printl("received_client_info...")
-	NetworkManager.emit_signal("received_client_info", p_client, p_client_info)
+	NetworkManager.received_client_info(p_client, p_client_info)
+
 
 # Called by client after the basic scene state for the client has been loaded and set up
-master func requested_server_state(p_client_info: Dictionary) -> void:
+master func requested_server_state(_client_info: Dictionary) -> void:
 	NetworkLogger.printl("requested_server_state...")
 	var rpc_sender_id: int = get_tree().multiplayer.get_rpc_sender_id()
-
+	
 	# This peer is waiting for the server state, but we may not be able to send it yet if the server has not fully loaded, so sit tight...
 	NetworkManager.received_peer_validation_state_update(rpc_sender_id,\
 	network_constants_const.validation_state_enum.VALIDATION_STATE_AWAITING_STATE)
 	
 	attempt_to_send_server_state_to_peer(rpc_sender_id)
 
+
 puppet func received_server_state(p_server_state: Dictionary) -> void:
 	NetworkLogger.printl("received_server_state...")
-	NetworkManager.emit_signal("received_server_state", p_server_state)
-
-
-func create_handshake_command(p_command: int) -> network_writer_const:
-	var network_writer: network_writer_const = NetworkManager.network_entity_command_writer_cache
-	network_writer.seek(0)
-
-	return network_writer
+	NetworkManager.received_server_state(p_server_state)
 
 
 func decode_handshake_buffer(
