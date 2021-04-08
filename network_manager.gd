@@ -495,7 +495,7 @@ func server_kick_player(p_id: int) -> void:
 
 func decode_buffer(p_id: int, p_buffer: PoolByteArray) -> void:
 	if OS.is_stdout_verbose():
-		ErrorManager.printl("--- Packet received from {id} ---".format({"id": p_id}))
+		LogManager.printl("--- Packet received from {id} ---".format({"id": p_id}))
 
 	var network_reader: network_reader_const = network_reader_const.new(p_buffer)
 
@@ -527,7 +527,7 @@ func decode_buffer(p_id: int, p_buffer: PoolByteArray) -> void:
 				p_id, network_reader, command
 			)
 		else:
-			ErrorManager.error("Invalid command: {command}".format({"command": str(command)}))
+			LogManager.error("Invalid command: {command}".format({"command": str(command)}))
 
 		if OS.is_stdout_verbose():
 			if network_reader:
@@ -535,7 +535,7 @@ func decode_buffer(p_id: int, p_buffer: PoolByteArray) -> void:
 				var command_string: String = network_constants_const.get_string_for_command(command)
 				var command_size: int = end_position - start_position
 
-				ErrorManager.printl(
+				LogManager.printl(
 					"Processed {command_string}: {command_size} bytes".format(
 						{"command_string": command_string, "command_size": str(command_size)}
 					)
@@ -552,7 +552,7 @@ func decode_buffer(p_id: int, p_buffer: PoolByteArray) -> void:
 
 	if OS.is_stdout_verbose():
 		var size: int = network_reader.get_position()
-		ErrorManager.printl(
+		LogManager.printl(
 			"--- Finished processing packet {count} from peer {id}, packet size: {size} ---".format(
 				{"count": received_packet_buffer_count[p_id], "id": p_id, "size": size}
 			)
