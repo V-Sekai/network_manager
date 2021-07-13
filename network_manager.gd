@@ -1,7 +1,5 @@
+@tool
 extends Node
-tool
-
-const entity_const = preload("res://addons/entity_manager/entity.gd")
 
 const NETWORK_MAJOR_VERSION = 0
 const NETWORK_MINOR_VERSION = 1
@@ -31,7 +29,7 @@ var packets_received_this_frame: int = 0
 var relay_flag: bool = false
 
 var kill_flag: bool = false
-onready var gameroot = get_tree().get_root()
+@onready var gameroot = get_tree().get_root()
 
 const network_replication_manager_const = preload("network_replication_manager.gd")
 const network_state_manager_const = preload("network_state_manager.gd")
@@ -41,7 +39,7 @@ const network_flow_manager_const = preload("network_flow_manager.gd")
 const network_handshake_manager_const = preload("network_handshake_manager.gd")
 const network_rpc_manager_const = preload("network_rpc_manager.gd")
 
-var server_state_ready: bool = false
+var server_state_readyx: bool = false
 
 var network_replication_manager: Node = null
 var network_state_manager: Node = null
@@ -83,7 +81,7 @@ const DUMMY_PEER_COUNT: int = 0
 var session_master: int = -1
 var session_master_reassigned: bool = false
 
-var network_entity_command_writer_cache: network_writer_const = network_writer_const.new(1024)
+var network_entity_command_writer_cache = network_writer_const.new(1024)
 
 signal network_process(p_delta)
 signal network_flush
@@ -96,11 +94,11 @@ signal peer_list_changed
 signal peer_registration_complete
 
 signal server_peer_connected(p_id)
-func server_peer_connected(p_id: int) -> void:
+func emit_server_peer_connected(p_id: int) -> void:
 	emit_signal("server_peer_connected", p_id)
 
 signal server_peer_disconnected(p_id)
-func server_peer_disconnected(p_id: int) -> void:
+func emit_server_peer_disconnected(p_id: int) -> void:
 	emit_signal("server_peer_disconnected", p_id)
 
 signal connection_failed
@@ -113,7 +111,7 @@ signal connection_killed
 signal server_state_ready
 
 signal voice_packet_compressed(p_peer_id, p_sequence_id, p_buffer)
-func voice_packet_compressed(p_peer_id: int, p_sequence_id: int, p_buffer: PoolByteArray) -> void:
+func emit_voice_packet_compressedx(p_peer_id: int, p_sequence_id: int, p_buffer: PackedByteArray) -> void:
 	emit_signal("voice_packet_compressed", p_peer_id, p_sequence_id, p_buffer)
 
 
@@ -134,7 +132,7 @@ func _network_peer_connected(p_id: int) -> void:
 			network_handshake_manager.ready_command(p_id)
 		if is_server():
 			network_handshake_manager.current_master_id()
-			server_peer_connected(p_id)
+			emit_server_peer_connected(p_id)
 
 
 func _network_peer_disconnected(p_id: int) -> void:
@@ -168,7 +166,7 @@ func get_entity_root_node() -> Node:
 
 
 #Client/Server
-func _network_peer_packet(p_id: int, p_packet: PoolByteArray) -> void:
+func _network_peer_packet(p_id: int, p_packet: PackedByteArray) -> void:
 	packets_received_this_frame += 1
 	
 	# Reset the timer for this peer
@@ -321,11 +319,11 @@ func join_game(p_ip: String, p_port: int) -> bool:
 func reset_session_data() -> void:
 	NetworkLogger.printl("Resetting session data")
 
-	server_state_ready = false
+	server_state_readyx = false
 	peer_data = {}
 	active_port = -1
 	client_state = network_constants_const.validation_state_enum.VALIDATION_STATE_NONE
-	var peers: PoolIntArray = get_connected_peers()
+	var peers: PackedInt32Array = get_connected_peers()
 	for peer_id in peers:
 		emit_signal("peer_unregistered", peer_id)
 	active_peers = []
@@ -351,7 +349,7 @@ func force_close_connection() -> void:
 func attempt_to_reassign_session_master() -> void:
 	if is_server():
 		if is_relay():
-			var peers: PoolIntArray = get_connected_peers()
+			var peers: PackedInt32Array = get_connected_peers()
 			if session_master == network_constants_const.SERVER_MASTER_PEER_ID:
 				if peers.size() > 0:
 					session_master = peers[0]
@@ -382,7 +380,7 @@ func get_current_peer_id() -> int:
 
 # Test to see if the peer with this id is connected
 func peer_is_connected(p_id: int) -> bool:
-	var connected_peers: PoolIntArray = get_connected_peers()
+	var connected_peers: PackedInt32Array = get_connected_peers()
 	for i in range(0, connected_peers.size()):
 		if connected_peers[i] == p_id:
 			return true
@@ -390,12 +388,12 @@ func peer_is_connected(p_id: int) -> bool:
 	return false
 
 
-func get_connected_peers() -> PoolIntArray:
+func get_connected_peers() -> PackedInt32Array:
 	if has_active_peer():
-		var connected_peers: PoolIntArray = get_tree().multiplayer.get_network_connected_peers()
+		var connected_peers: PackedInt32Array = get_tree().multiplayer.get_network_connected_peers()
 		return connected_peers
 	else:
-		return PoolIntArray()
+		return PackedInt32Array()
 
 
 func copy_active_peers() -> Array:
@@ -415,45 +413,45 @@ signal requesting_server_state
 signal peer_validation_state_error_callback
 
 signal requested_server_info(p_id)
-func requested_server_info(p_id: int) -> void:
+func emit_requested_server_info(p_id: int) -> void:
 	emit_signal("requested_server_info", p_id)
 
 signal received_server_info(p_info)
-func received_server_info(p_info: Dictionary) -> void:
+func emit_received_server_info(p_info: Dictionary) -> void:
 	emit_signal("received_server_info", p_info)
 
 signal requested_server_state(p_id)
-func requested_server_state(p_id: int) -> void:
+func emit_requested_server_state(p_id: int) -> void:
 	emit_signal("requested_server_state", p_id)
 
 signal received_server_state(p_state)
-func received_server_state(p_state: Dictionary) -> void:
+func emit_received_server_state(p_state: Dictionary) -> void:
 	emit_signal("received_server_state", p_state)
 
 signal received_client_info(p_id, p_info)
-func received_client_info(p_id: int, p_info: Dictionary) -> void:
+func emit_received_client_info(p_id: int, p_info: Dictionary) -> void:
 	emit_signal("received_client_info", p_id, p_info)
 
 signal entity_network_id_registered(p_network_id)
-func entity_network_id_registered(p_network_id: int) -> void:
+func emit_entity_network_id_registered(p_network_id: int) -> void:
 	emit_signal("entity_network_id_registered", p_network_id)
 
 signal entity_network_id_unregistered(p_network_id)
-func entity_network_id_unregistered(p_network_id: int) -> void:
+func emit_entity_network_id_unregistered(p_network_id: int) -> void:
 	emit_signal("entity_network_id_unregistered", p_network_id)
 
-master func create_server_info() -> void:
+@master func send_create_server_info() -> void:
 	NetworkLogger.printl("create_server_info...")
 	emit_signal("create_server_info")
 
-master func create_server_state() -> void:
+@master func send_create_server_state() -> void:
 	NetworkLogger.printl("create_server_state...")
 	emit_signal("create_server_state")
 
-remote func peer_validation_state_error_callback() -> void:
-	NetworkLogger.printl("peer_validation_state_error_callback...")
+@remote func peer_validation_state_error() -> void:
+	NetworkLogger.printl("peer_validation_state_error...")
 	if is_server():
-		rpc("peer_validation_state_error_callback")
+		rpc("peer_validation_state_error")
 	else:
 		# Return if the rpc sender was not the server
 		if not is_rpc_sender_id_server():
@@ -468,7 +466,7 @@ func confirm_client_ready_for_sync(p_network_id: int) -> void:
 		peer_data[p_network_id].validation_state
 		!= network_constants_const.validation_state_enum.VALIDATION_STATE_STATE_SENT
 	):
-		peer_validation_state_error_callback()
+		peer_validation_state_error()
 	else:
 		received_peer_validation_state_update(p_network_id,\
 		network_constants_const.validation_state_enum.VALIDATION_STATE_SYNCED)
@@ -493,11 +491,11 @@ func server_kick_player(p_id: int) -> void:
 			# TODO register disconnection
 
 
-func decode_buffer(p_id: int, p_buffer: PoolByteArray) -> void:
+func decode_buffer(p_id: int, p_buffer: PackedByteArray) -> void:
 	if OS.is_stdout_verbose():
 		LogManager.printl("--- Packet received from {id} ---".format({"id": p_id}))
 
-	var network_reader: network_reader_const = network_reader_const.new(p_buffer)
+	var network_reader = network_reader_const.new(p_buffer)
 
 	while network_reader:
 		var command = network_reader.get_u8()
@@ -543,9 +541,9 @@ func decode_buffer(p_id: int, p_buffer: PoolByteArray) -> void:
 			else:
 				NetworkLogger.printl("Processed NULL")
 
-	EntityManager.scene_tree_execution_table.call_deferred(
-		"_execute_scene_tree_execution_table_unsafe"
-	)
+	###EntityManager.scene_tree_execution_table.call_deferred(
+	###	"_execute_scene_tree_execution_table_unsafe"
+	###)
 
 	if ! received_packet_buffer_count.has(p_id):
 		received_packet_buffer_count[p_id] = 0
@@ -572,7 +570,7 @@ func _process(p_delta: float) -> void:
 			
 			if has_active_peer():
 				if is_server():
-					var peers: PoolIntArray = get_connected_peers()
+					var peers: PackedInt32Array = get_connected_peers()
 					for peer in peers:
 						peer_data[peer]["time_since_last_update_received"] += p_delta
 				
@@ -716,26 +714,26 @@ func setup_project_settings() -> void:
 			printerr("NetworkManager: Could not save project settings!")
 		
 func confirm_server_state_ready() -> void:
-	server_state_ready = true
+	server_state_readyx = true
 	emit_signal("server_state_ready")
 
 ########
 # Node #
 ########
 
-func _ready() -> void:
+func _ready():
 	setup_project_settings()
 
 	if ! Engine.is_editor_hint():
 		network_process_frame_timeslice = 1.0 / network_fps
 		for current_signal in multiplayer_signal_table:
 			if (
-				get_tree().multiplayer.connect(current_signal.signal, self, current_signal.method)
-				!= OK
+				get_tree().multiplayer.connect(current_signal["signal"], Callable(self, current_signal.method))
+				!= 0
 			):
 				NetworkLogger.error(
 					"NetworkManager: {signal} could not be connected!".format(
-						{"signal": str(current_signal.signal)}
+						{"signal": str(current_signal["signal"])}
 					)
 				)
 
@@ -751,31 +749,24 @@ func _enter_tree() -> void:
 	add_child(network_rpc_manager)
 
 
-func _init() -> void:
-	network_replication_manager = Node.new()
-	network_replication_manager.set_script(network_replication_manager_const)
+func _init():
+	network_replication_manager = network_replication_manager_const.new(self)
 	network_replication_manager.set_name("NetworkReplicationManager")
 
-	network_state_manager = Node.new()
-	network_state_manager.set_script(network_state_manager_const)
+	network_state_manager = network_state_manager_const.new(self)
 	network_state_manager.set_name("NetworkStateManager")
 
-	network_voice_manager = Node.new()
-	network_voice_manager.set_script(network_voice_manager_const)
+	network_voice_manager = network_voice_manager_const.new(self)
 	network_voice_manager.set_name("NetworkVoiceManager")
 
-	network_entity_manager = Node.new()
-	network_entity_manager.set_script(network_entity_manager_const)
+	network_entity_manager = network_entity_manager_const.new(self)
 	network_entity_manager.set_name("NetworkEntityManager")
 
-	network_flow_manager = Node.new()
-	network_flow_manager.set_script(network_flow_manager_const)
+	network_flow_manager = network_flow_manager_const.new(self)
 	network_flow_manager.set_name("NetworkFlowManager")
 
-	network_handshake_manager = Node.new()
-	network_handshake_manager.set_script(network_handshake_manager_const)
+	network_handshake_manager = network_handshake_manager_const.new(self)
 	network_handshake_manager.set_name("NetworkHandshakeManager")
 	
-	network_rpc_manager = Node.new()
-	network_rpc_manager.set_script(network_rpc_manager_const)
+	network_rpc_manager = network_rpc_manager_const.new(self)
 	network_rpc_manager.set_name("NetworkRPCManager")

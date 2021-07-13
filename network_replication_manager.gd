@@ -1,14 +1,17 @@
+@tool
 extends Node
-tool
 
-const ref_pool_const = preload("res://addons/gdutil/ref_pool.gd")
+const ref_pool_const = preload("res://addons/gd_util/ref_pool.gd")
 
-const entity_const = preload("res://addons/entity_manager/entity.gd")
 const network_constants_const = preload("network_constants.gd")
 const network_writer_const = preload("network_writer.gd")
-const network_reader_const = preload("network_reader.gd")
 
 const MAXIMUM_REPLICATION_PACKET_SIZE = 1024
+
+var network_manager: Object
+
+func _init(p_network_manager):
+	network_manager = p_network_manager
 
 var dummy_replication_writer = network_writer_const.new(MAXIMUM_REPLICATION_PACKET_SIZE)  # For debugging purposes
 var replication_writers = {}
@@ -61,14 +64,14 @@ var network_entity_ids_pending_request_transfer_master: Array = []
 
 
 func _network_id_registered_added(p_entity_id: int) -> void:
-	if NetworkManager.is_server():
+	if network_manager.is_server():
 		if network_entity_ids_pending_spawn.has(p_entity_id):
 			NetworkLogger.error("Attempted to spawn two identical network entities")
 
 		network_entity_ids_pending_spawn.push_back(p_entity_id)
 
 func _network_id_unregistered_added(p_entity_id: int) -> void:
-	if NetworkManager.is_server():
+	if network_manager.is_server():
 		if network_entity_ids_pending_request_transfer_master.has(p_entity_id):
 			network_entity_ids_pending_request_transfer_master.remove(
 				network_entity_ids_pending_request_transfer_master.find(p_entity_id)
@@ -90,24 +93,24 @@ func _entity_request_transfer_master(p_entity_id: int) -> void:
 			network_entity_ids_pending_request_transfer_master.push_back(p_entity_id)
 
 
-"""
-
-"""
+## 
+## 
+## 
 
 
 func get_entity_root_node() -> Node:
-	return NetworkManager.get_entity_root_node()
+	return network_manager.get_entity_root_node()
 
 
-""" Network ids end """
+##  Network ids end 
 
-"""
-Server
-"""
+## 
+## Server
+## 
 
 
-func write_entity_spawn_command(p_entity_id: int, p_network_writer: network_writer_const) -> network_writer_const:
-	var network_entity_manager: Node = NetworkManager.network_entity_manager
+func write_entity_spawn_command(p_entity_id: int, p_network_writer: Object) -> Object:
+	var network_entity_manager: Node = network_manager.network_entity_manager
 	var entity_instance: Node = network_entity_manager.get_network_instance_for_instance_id(p_entity_id)
 
 	p_network_writer = network_entity_manager.write_entity_scene_id(
@@ -118,7 +121,7 @@ func write_entity_spawn_command(p_entity_id: int, p_network_writer: network_writ
 		entity_instance, p_network_writer
 	)
 
-	var entity_state: network_writer_const = entity_instance.network_identity_node.get_state(null, true)
+	var entity_state: Object = entity_instance.network_identity_node.get_state(null, true)
 	
 	var entity_state_size = entity_state.get_position()
 	if entity_state_size >= 0xffff:
@@ -129,17 +132,17 @@ func write_entity_spawn_command(p_entity_id: int, p_network_writer: network_writ
 	return p_network_writer
 
 
-func write_entity_destroy_command(p_entity_id: int, p_network_writer: network_writer_const) -> network_writer_const:
-	var network_entity_manager: Node = NetworkManager.network_entity_manager
+func write_entity_destroy_command(p_entity_id: int, p_network_writer: Object) -> Object:
+	var network_entity_manager: Node = network_manager.network_entity_manager
 
 	p_network_writer = network_entity_manager.write_entity_instance_id(p_entity_id, p_network_writer)
 
 	return p_network_writer
 
 
-func write_entity_request_master_command(p_entity_id: int, p_network_writer: network_writer_const
-) -> network_writer_const:
-	var network_entity_manager: Node = NetworkManager.network_entity_manager
+func write_entity_request_master_command(p_entity_id: int, p_network_writer: Object
+) -> Object:
+	var network_entity_manager: Node = network_manager.network_entity_manager
 	var entity_instance: Node = network_entity_manager.get_network_instance_for_instance_id(p_entity_id)
 	assert(entity_instance)
 
@@ -148,9 +151,9 @@ func write_entity_request_master_command(p_entity_id: int, p_network_writer: net
 	return p_network_writer
 
 
-func write_entity_transfer_master_command(p_entity_id: int, p_network_writer: network_writer_const
-) -> network_writer_const:
-	var network_entity_manager: Node = NetworkManager.network_entity_manager
+func write_entity_transfer_master_command(p_entity_id: int, p_network_writer: Object
+) -> Object:
+	var network_entity_manager: Node = network_manager.network_entity_manager
 	var entity_instance: Node = network_entity_manager.get_network_instance_for_instance_id(p_entity_id)
 
 	p_network_writer = network_entity_manager.write_entity_instance_id_for_entity(entity_instance, p_network_writer)
@@ -159,8 +162,8 @@ func write_entity_transfer_master_command(p_entity_id: int, p_network_writer: ne
 	return p_network_writer
 
 
-func create_entity_command(p_command: int, p_entity_id: int) -> network_writer_const:
-	var network_writer: network_writer_const = NetworkManager.network_entity_command_writer_cache
+func create_entity_command(p_command: int, p_entity_id: int) -> Object:
+	var network_writer: Object = network_manager.network_entity_command_writer_cache
 	network_writer.seek(0)
 	
 	match p_command:
@@ -184,7 +187,7 @@ func create_entity_command(p_command: int, p_entity_id: int) -> network_writer_c
 
 func get_network_scene_id_from_path(p_path: String) -> int:
 	var path: String = p_path
-	var network_entity_manager: Node = NetworkManager.network_entity_manager
+	var network_entity_manager: Node = network_manager.network_entity_manager
 
 	while 1:
 		var network_scene_id: int = network_entity_manager.networked_scenes.find(path)
@@ -209,13 +212,13 @@ func get_network_scene_id_from_path(p_path: String) -> int:
 
 
 func create_spawn_state_for_new_client(p_network_id: int) -> void:
-	EntityManager.scene_tree_execution_table._execute_scene_tree_execution_table_unsafe()
+	###EntityManager.scene_tree_execution_table._execute_scene_tree_execution_table_unsafe()
 
 	var ignore_list: Array = []
 	
 	var entities: Array = get_tree().get_nodes_in_group("NetworkedEntities")
 
-	var network_writer_state: network_writer_const = null
+	var network_writer_state: Object = null
 
 	if p_network_id != -1:
 		network_writer_state = replication_writers[p_network_id]
@@ -232,7 +235,7 @@ func create_spawn_state_for_new_client(p_network_id: int) -> void:
 
 	for entity in entities:
 		if entity.is_inside_tree():
-			var entity_command_network_writer: network_writer_const = create_entity_command(
+			var entity_command_network_writer: Object = create_entity_command(
 				network_constants_const.SPAWN_ENTITY_COMMAND, entity.network_identity_node.network_instance_id
 			)
 			network_writer_state.put_writer(
@@ -270,7 +273,7 @@ func _network_manager_process(p_id: int, _delta: float) -> void:
 		if network_entity_ids_pending_spawn.size():
 			NetworkLogger.printl("Spawning entities = [")
 			for entity_id in network_entity_ids_pending_spawn:
-				var entity_instance: Node = NetworkManager.network_entity_manager.get_network_instance_for_instance_id(entity_id)
+				var entity_instance: Node = network_manager.network_entity_manager.get_network_instance_for_instance_id(entity_id)
 				if is_instance_valid(entity_instance):
 					NetworkLogger.printl("{ %s }" % entity_instance.get_name())
 			NetworkLogger.printl("]")
@@ -278,16 +281,16 @@ func _network_manager_process(p_id: int, _delta: float) -> void:
 		if network_entity_ids_pending_destruction.size():
 			NetworkLogger.printl("Destroying entities = [")
 			for entity_id in network_entity_ids_pending_destruction:
-				var entity_instance: Node = NetworkManager.network_entity_manager.get_network_instance_for_instance_id(entity_id)
+				var entity_instance: Node = network_manager.network_entity_manager.get_network_instance_for_instance_id(entity_id)
 				if is_instance_valid(entity_instance):
 					NetworkLogger.printl("{ %s }" % entity_instance.get_name())
 			NetworkLogger.printl("]")
 		# Debugging end
 
-		var synced_peers: Array = NetworkManager.copy_valid_send_peers(p_id, false)
+		var synced_peers: Array = network_manager.copy_valid_send_peers(p_id, false)
 
 		for synced_peer in synced_peers:
-			var network_writer_state: network_writer_const = null
+			var network_writer_state: Object = null
 			
 			var ignore_list: Array = []
 			if network_entity_ignore_table.has(synced_peer):
@@ -300,14 +303,14 @@ func _network_manager_process(p_id: int, _delta: float) -> void:
 
 			network_writer_state.seek(0)
 
-			if p_id == NetworkManager.session_master:
+			if p_id == network_manager.session_master:
 				# Spawn commands
 				for entity_id in network_entity_ids_pending_spawn:
 					# If this entity is in the ignore list, skip it
-					if ignore_list.has(NetworkManager.network_entity_manager.get_network_instance_for_instance_id(entity_id)):
+					if ignore_list.has(network_manager.network_entity_manager.get_network_instance_for_instance_id(entity_id)):
 						continue
 					
-					var entity_command_network_writer: network_writer_const\
+					var entity_command_network_writer: Object\
 					= create_entity_command(
 						network_constants_const.SPAWN_ENTITY_COMMAND, entity_id
 					)
@@ -318,7 +321,7 @@ func _network_manager_process(p_id: int, _delta: float) -> void:
 
 				# Destroy commands
 				for entity_id in network_entity_ids_pending_destruction:
-					var entity_command_network_writer: network_writer_const\
+					var entity_command_network_writer: Object\
 					= create_entity_command(
 						network_constants_const.DESTROY_ENTITY_COMMAND, entity_id
 					)
@@ -329,7 +332,7 @@ func _network_manager_process(p_id: int, _delta: float) -> void:
 
 				# Transfer master commands
 				for entity_id in network_entity_ids_pending_request_transfer_master:
-					var entity_command_network_writer: network_writer_const\
+					var entity_command_network_writer: Object\
 					= create_entity_command(
 						network_constants_const.TRANSFER_ENTITY_MASTER_COMMAND, entity_id
 					)
@@ -340,7 +343,7 @@ func _network_manager_process(p_id: int, _delta: float) -> void:
 			else:
 				# Request master commands
 				for entity_id in  network_entity_ids_pending_request_transfer_master:
-					var entity_command_network_writer: network_writer_const =\
+					var entity_command_network_writer: Object =\
 					create_entity_command(
 						network_constants_const.REQUEST_ENTITY_MASTER_COMMAND, entity_id
 					)
@@ -350,10 +353,10 @@ func _network_manager_process(p_id: int, _delta: float) -> void:
 					)
 
 			if network_writer_state.get_position() > 0:
-				var raw_data: PoolByteArray = network_writer_state.get_raw_data(
+				var raw_data: PackedByteArray = network_writer_state.get_raw_data(
 					network_writer_state.get_position()
 				)
-				NetworkManager.network_flow_manager.queue_packet_for_send(
+				network_manager.network_flow_manager.queue_packet_for_send(
 					ref_pool_const.new(raw_data),
 					synced_peer,
 					NetworkedMultiplayerPeer.TRANSFER_MODE_RELIABLE
@@ -363,14 +366,14 @@ func _network_manager_process(p_id: int, _delta: float) -> void:
 		flush()
 
 
-"""
-Client
-"""
+## 
+## Client
+## 
 
 
 func get_scene_path_for_scene_id(p_scene_id: int) -> String:
-	if NetworkManager.network_entity_manager.networked_scenes.size() > p_scene_id:
-		var network_entity_manager: Node = NetworkManager.network_entity_manager
+	if network_manager.network_entity_manager.networked_scenes.size() > p_scene_id:
+		var network_entity_manager: Node = network_manager.network_entity_manager
 		var path: String = network_entity_manager.networked_scenes[p_scene_id]
 
 		return path
@@ -388,13 +391,13 @@ func get_packed_scene_for_path(p_path: String) -> PackedScene:
 		return null
 
 
-func decode_entity_spawn_command(p_packet_sender_id: int, p_network_reader: network_reader_const) -> network_reader_const:
-	var network_entity_manager: Node = NetworkManager.network_entity_manager
+func decode_entity_spawn_command(p_packet_sender_id: int, p_network_reader: Object) -> Object:
+	var network_entity_manager: Node = network_manager.network_entity_manager
 	var valid_sender_id = false
 
 	if (
-		p_packet_sender_id == NetworkManager.session_master
-		or p_packet_sender_id == NetworkManager.network_constants_const.SERVER_MASTER_PEER_ID
+		p_packet_sender_id == network_manager.session_master
+		or p_packet_sender_id == network_constants_const.SERVER_MASTER_PEER_ID
 	):
 		valid_sender_id = true
 
@@ -448,9 +451,9 @@ func decode_entity_spawn_command(p_packet_sender_id: int, p_network_reader: netw
 		)
 		return null
 
-	var entity_instance: entity_const = packed_scene.instance()
+	var entity_instance: Node = packed_scene.instantiate()
 	if entity_instance == null:
-		NetworkLogger.error("decode_entity_spawn_command: null instance!")
+		NetworkLogger.error("decode_entity_spawn_command: null instantiate!")
 		return null
 
 	entity_instance._threaded_instance_setup(instance_id, p_network_reader)
@@ -462,21 +465,21 @@ func decode_entity_spawn_command(p_packet_sender_id: int, p_network_reader: netw
 	)
 	entity_instance.set_network_master(network_master)
 
-	EntityManager.scene_tree_execution_command(
-		EntityManager.scene_tree_execution_table_const.ADD_ENTITY,
-		entity_instance
-	)
+	###EntityManager.scene_tree_execution_command(
+	###	EntityManager.scene_tree_execution_table_const.ADD_ENTITY,
+	###	entity_instance
+	###)
 
 	return p_network_reader
 
 
-func decode_entity_destroy_command(p_packet_sender_id: int, p_network_reader: network_reader_const) -> network_reader_const:
-	var network_entity_manager: Node = NetworkManager.network_entity_manager
+func decode_entity_destroy_command(p_packet_sender_id: int, p_network_reader: Object) -> Object:
+	var network_entity_manager: Node = network_manager.network_entity_manager
 	var valid_sender_id = false
 
 	if (
-		p_packet_sender_id == NetworkManager.session_master
-		or p_packet_sender_id == NetworkManager.network_constants_const.SERVER_MASTER_PEER_ID
+		p_packet_sender_id == network_manager.session_master
+		or p_packet_sender_id == network_constants_const.SERVER_MASTER_PEER_ID
 	):
 		valid_sender_id = true
 
@@ -498,10 +501,10 @@ func decode_entity_destroy_command(p_packet_sender_id: int, p_network_reader: ne
 
 	if network_entity_manager.network_instance_ids.has(instance_id):
 		var entity_instance: Node = network_entity_manager.get_network_instance_for_instance_id(instance_id)
-		EntityManager.scene_tree_execution_command(
-			EntityManager.scene_tree_execution_table_const.REMOVE_ENTITY,
-			entity_instance
-		)
+		###EntityManager.scene_tree_execution_command(
+		###	EntityManager.scene_tree_execution_table_const.REMOVE_ENTITY,
+		###	entity_instance
+		###)
 	else:
 		NetworkLogger.error("Attempted to destroy invalid node")
 
@@ -509,13 +512,13 @@ func decode_entity_destroy_command(p_packet_sender_id: int, p_network_reader: ne
 
 
 func decode_entity_request_master_command(
-	p_packet_sender_id: int, p_network_reader: network_reader_const
-) -> network_reader_const:
-	var network_entity_manager: Node = NetworkManager.network_entity_manager
+	p_packet_sender_id: int, p_network_reader: Object
+) -> Object:
+	var network_entity_manager: Node = network_manager.network_entity_manager
 
 	var valid_sender_id = false
 
-	if NetworkManager.is_session_master():
+	if network_manager.is_session_master():
 		valid_sender_id = true
 
 	if p_network_reader.is_eof():
@@ -551,15 +554,15 @@ func decode_entity_request_master_command(
 
 # Parse an entity transfer master command. Will only be accepted
 func decode_entity_transfer_master_command(
-	p_packet_sender_id: int, p_network_reader: network_reader_const
-) -> network_reader_const:
-	var network_entity_manager: Node = NetworkManager.network_entity_manager
+	p_packet_sender_id: int, p_network_reader: Object
+) -> Object:
+	var network_entity_manager: Node = network_manager.network_entity_manager
 
 	var valid_sender_id: bool = false
 
 	if (
-		p_packet_sender_id == NetworkManager.session_master
-		or p_packet_sender_id == NetworkManager.network_constants_const.SERVER_MASTER_PEER_ID
+		p_packet_sender_id == network_manager.session_master
+		or p_packet_sender_id == network_constants_const.SERVER_MASTER_PEER_ID
 	):
 		valid_sender_id = true
 
@@ -602,8 +605,8 @@ func decode_entity_transfer_master_command(
 
 # Called me the network manager to process replication messages
 func decode_replication_buffer(
-	p_packet_sender_id: int, p_network_reader: network_reader_const, p_command: int
-) -> network_reader_const:
+	p_packet_sender_id: int, p_network_reader: Object, p_command: int
+) -> Object:
 	match p_command:
 		network_constants_const.SPAWN_ENTITY_COMMAND:
 			p_network_reader = decode_entity_spawn_command(p_packet_sender_id, p_network_reader)
@@ -635,12 +638,12 @@ func request_to_become_master(p_entity_id: int, p_entity: Node, p_id: int) -> vo
 # they will attempt to claim mastership over all entities owned by the
 # disconnecting peer
 func _reclaim_peers_entities(p_id: int) -> void:
-	if NetworkManager.is_session_master():
-		var entities: Array = EntityManager.get_all_entities()
+	if network_manager.is_session_master():
+		var entities: Array = [] ###EntityManager.get_all_entities()
 		for entity_instance in entities:
 			if entity_instance.get_network_master() == p_id:
 				if entity_instance.can_request_master_from_peer(
-					NetworkManager.get_current_peer_id()
+					network_manager.get_current_peer_id()
 				):
 					entity_instance.request_to_become_master()
 
@@ -651,14 +654,14 @@ func _game_hosted() -> void:
 
 func _connected_to_server() -> void:
 	replication_writers = {}
-	var network_writer: network_writer_const = network_writer_const.new(
+	var network_writer = network_writer_const.new(
 		MAXIMUM_REPLICATION_PACKET_SIZE
 	)
-	replication_writers[NetworkManager.network_constants_const.SERVER_MASTER_PEER_ID] = network_writer
+	replication_writers[network_constants_const.SERVER_MASTER_PEER_ID] = network_writer
 
 
 func _server_peer_connected(p_id: int) -> void:
-	var network_writer: network_writer_const = network_writer_const.new(
+	var network_writer = network_writer_const.new(
 		MAXIMUM_REPLICATION_PACKET_SIZE
 	)
 	replication_writers[p_id] = network_writer

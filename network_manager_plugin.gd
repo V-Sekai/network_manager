@@ -1,10 +1,10 @@
+@tool
 extends EditorPlugin
-tool
 
 var editor_interface: EditorInterface = null
 
 
-func _init() -> void:
+func _init():
 	print("Initialising NetworkManager plugin")
 
 
@@ -14,7 +14,7 @@ func _notification(p_notification: int):
 			print("Destroying NetworkManager plugin")
 
 
-func get_name() -> String:
+func _get_plugin_name() -> String:
 	return "NetworkManager"
 
 

@@ -1,12 +1,10 @@
-extends Reference
-tool
-
-const entity_const = preload("res://addons/entity_manager/entity.gd")
+@tool
+extends RefCounted
 
 var eof_reached: bool = false
 var stream_peer_buffer: StreamPeerBuffer = null
 
-static func decode_24_bit_value(p_buffer: PoolByteArray) -> int:
+static func decode_24_bit_value(p_buffer: PackedByteArray) -> int:
 	var integer: int = 0
 	integer = (
 		p_buffer[0] & 0x000000ff
@@ -16,7 +14,7 @@ static func decode_24_bit_value(p_buffer: PoolByteArray) -> int:
 	return integer
 
 
-func _init(p_buffer: PoolByteArray) -> void:
+func _init(p_buffer: PackedByteArray):
 	assert(typeof(p_buffer) == TYPE_RAW_ARRAY)
 	stream_peer_buffer = StreamPeerBuffer.new()
 	stream_peer_buffer.data_array = p_buffer
@@ -62,11 +60,11 @@ func get_24() -> int:
 		eof_reached = true
 		return 0
 
-	var value_buffer = PoolByteArray(
+	var value_buffer = PackedByteArray(
 		[stream_peer_buffer.get_8(), stream_peer_buffer.get_8(), stream_peer_buffer.get_8()]
 	)
 	if stream_peer_buffer.big_endian:
-		value_buffer.invert()
+		value_buffer.reverse()
 
 	return decode_24_bit_value(value_buffer)
 
@@ -135,7 +133,7 @@ func get_8bit_pascal_string(p_utf8: bool) -> String:
 	var string: String = ""
 	var size: int = get_8()
 	if size > 0:
-		var buffer: PoolByteArray = get_buffer(size)
+		var buffer: PackedByteArray = get_buffer(size)
 		if p_utf8:
 			string = buffer.get_string_from_utf8()
 		else:
@@ -144,14 +142,14 @@ func get_8bit_pascal_string(p_utf8: bool) -> String:
 	return string
 
 
-func get_buffer(p_size) -> PoolByteArray:
+func get_buffer(p_size) -> PackedByteArray:
 	if stream_peer_buffer.get_available_bytes() < p_size:
 		eof_reached = true
 		stream_peer_buffer.seek(stream_peer_buffer.get_size())
-		return PoolByteArray()
+		return PackedByteArray()
 
 	var pos: int = stream_peer_buffer.get_position()
-	var buffer: PoolByteArray = stream_peer_buffer.data_array.subarray(pos, pos + p_size - 1)
+	var buffer: PackedByteArray = stream_peer_buffer.data_array.subarray(pos, pos + p_size - 1)
 	stream_peer_buffer.seek(pos + p_size)
 
 	return buffer
@@ -172,16 +170,16 @@ func get_rect2() -> Rect2:
 	return Rect2(get_float(), get_float(), get_float(), get_float())
 
 
-func get_quat() -> Quat:
-	return Quat(get_float(), get_float(), get_float(), get_float())
+func get_quat() -> Quaternion:
+	return Quaternion(get_float(), get_float(), get_float(), get_float())
 
 
 func get_basis() -> Basis:
 	return Basis(get_vector3(), get_vector3(), get_vector3())
 
 
-func get_transform() -> Transform:
-	return Transform(get_basis(), get_vector3())
+func get_transform() -> Transform3D:
+	return Transform3D(get_basis(), get_vector3())
 
 
 func get_var():
@@ -192,5 +190,5 @@ func get_entity_id() -> int:
 	return get_u32()
 
 
-func get_entity() -> entity_const:
+func get_entity() -> Object:
 	return null

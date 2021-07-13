@@ -1,15 +1,15 @@
-extends Reference
-tool
+@tool
+extends RefCounted
 
 var stream_peer_buffer: StreamPeerBuffer = StreamPeerBuffer.new()
 
-static func encode_24_bit_value(p_value: int) -> PoolByteArray:
-	return PoolByteArray(
+static func encode_24_bit_value(p_value: int) -> PackedByteArray:
+	return PackedByteArray(
 		[p_value & 0x000000ff, (p_value & 0x0000ff00) >> 8, (p_value & 0x00ff0000) >> 16]
 	)
 
 
-func get_raw_data(p_size: int = 0) -> PoolByteArray:
+func get_raw_data(p_size: int = 0) -> PackedByteArray:
 	if stream_peer_buffer.data_array.size() == p_size or p_size <= 0:
 		return stream_peer_buffer.data_array
 	else:
@@ -39,14 +39,14 @@ func seek(p_position: int) -> void:
 		stream_peer_buffer.seek(p_position)
 
 
-func put_data(p_data: PoolByteArray) -> void:
+func put_data(p_data: PackedByteArray) -> void:
 	if stream_peer_buffer.put_data(p_data) != OK:
 		NetworkLogger.error("put_data returned an error!")
 
 
-func put_ranged_data(p_data: PoolByteArray, p_position: int, p_length: int) -> void:
+func put_ranged_data(p_data: PackedByteArray, p_position: int, p_length: int) -> void:
 	if p_length > 0:
-		var subarray: PoolByteArray = p_data.subarray(p_position, p_position + p_length - 1)
+		var subarray: PackedByteArray = p_data.subarray(p_position, p_position + p_length - 1)
 		if stream_peer_buffer.put_data(subarray) != OK:
 			NetworkLogger.error("put_ranged_data returned an error!")
 
@@ -68,9 +68,9 @@ func put_16(p_value: int) -> void:
 
 
 func put_24(p_value: int) -> void:
-	var value_buffer: PoolByteArray = encode_24_bit_value(p_value)
+	var value_buffer: PackedByteArray = encode_24_bit_value(p_value)
 	if stream_peer_buffer.big_endian:
-		value_buffer.invert()
+		value_buffer.reverse()
 	put_data(value_buffer)
 
 
@@ -111,11 +111,11 @@ func put_double(p_double: float) -> void:
 
 
 func put_8bit_pascal_string(p_value: String, p_utf8: bool) -> void:
-	var buffer: PoolByteArray = PoolByteArray()
+	var buffer: PackedByteArray = PackedByteArray()
 	if p_utf8:
-		buffer = p_value.to_utf8()
+		buffer = p_value.to_utf8_buffer()
 	else:
-		buffer = p_value.to_ascii()
+		buffer = p_value.to_ascii_buffer()
 
 	if buffer.size() >= 255:
 		NetworkLogger.error("Pascal string too long!")
@@ -143,7 +143,7 @@ func put_rect2(p_rect: Rect2) -> void:
 	put_float(p_rect.size.y)
 
 
-func put_quat(p_quat: Quat) -> void:
+func put_quat(p_quat: Quaternion) -> void:
 	put_float(p_quat.x)
 	put_float(p_quat.y)
 	put_float(p_quat.z)
@@ -156,7 +156,7 @@ func put_basis(p_basis: Basis) -> void:
 	put_vector3(p_basis.z)
 
 
-func put_transform(p_transform: Transform) -> void:
+func put_transform(p_transform: Transform3D) -> void:
 	put_basis(p_transform.basis)
 	put_vector3(p_transform.origin)
 
@@ -165,6 +165,6 @@ func put_var(p_var) -> void:
 	stream_peer_buffer.put_var(p_var, false)
 
 
-func _init(p_size: int = 0) -> void:
+func _init(p_size: int = 0):
 	if p_size > 0:
 		stream_peer_buffer.resize(p_size)

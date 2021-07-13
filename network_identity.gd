@@ -1,18 +1,20 @@
-extends "res://addons/entity_manager/component_node.gd"
-class_name NetworkIdentity
-tool
+@tool
+class_name NetworkIdentity extends "res://addons/entity_manager/component_node.gd"
+
 
 const network_manager_const = preload("res://addons/network_manager/network_manager.gd")
 const network_entity_manager_const = preload("res://addons/network_manager/network_entity_manager.gd")
 
-const network_reader_const = preload("res://addons/network_manager/network_reader.gd")
-const network_writer_const = preload("res://addons/network_manager/network_writer.gd")
 
-"""         
-Network Instance ID
-"""
-var network_instance_id: int = network_entity_manager_const.NULL_NETWORK_INSTANCE_ID setget set_network_instance_id
-var network_scene_id: int = -1 setget set_network_scene_id
+##          
+## Network Instance ID
+## 
+var network_instance_id: int = 2 :
+	set = set_network_instance_id
+
+var network_scene_id: int = -1 :
+	set = set_network_scene_id
+
 
 
 func set_network_instance_id(p_id: int) -> void:
@@ -40,12 +42,12 @@ func on_predelete() -> void:
 			NetworkManager.network_entity_manager.unregister_network_instance_id(network_instance_id)
 
 
-func get_state(p_writer: network_writer_const, p_initial_state: bool) -> network_writer_const:
+func get_state(p_writer, p_initial_state: bool):
 	p_writer = entity_node.network_logic_node.on_serialize(p_writer, p_initial_state)
 	return p_writer
 
 
-func update_state(p_reader: network_reader_const, p_initial_state: bool) -> network_reader_const:
+func update_state(p_reader, p_initial_state: bool):
 	p_reader = entity_node.network_logic_node.on_deserialize(p_reader, p_initial_state)
 	return p_reader
 
@@ -71,7 +73,7 @@ func _entity_ready() -> void:
 		else:
 			# This is a bad approach, we should be purging entities for the clients
 			# BEFORE they are instantiated, but this will do for now...
-			if ! entity_node.get_name().begins_with("NetEntity"):
+			if ! str(entity_node.get_name()).begins_with("NetEntity"):
 				print("Client deleting entity node %s" % entity_node.get_name())
 				entity_node.queue_free()
 				return
@@ -85,7 +87,7 @@ func _entity_ready() -> void:
 		entity_node.add_to_group("NetworkedEntities")
 
 
-func _threaded_instance_setup(p_instance_id: int, p_network_reader: Reference) -> void:
+func _threaded_instance_setup(p_instance_id: int, p_network_reader: RefCounted) -> void:
 	set_network_instance_id(p_instance_id)
 	p_network_reader = update_state(p_network_reader, true)
 

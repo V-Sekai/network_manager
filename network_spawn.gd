@@ -1,5 +1,5 @@
-extends Position3D
-class_name NetworkSpawn
+class_name NetworkSpawn extends Position3D
+
 
 
 func _enter_tree() -> void:

@@ -1,10 +1,16 @@
+@tool
 extends Node
-tool
+
+const network_constants_const = preload("network_constants.gd")
 
 const LOG_SENT_DATA = false
-var sent_data_file = File.new()
 
-const ref_pool_const = preload("res://addons/gdutil/ref_pool.gd")
+var network_manager: Object
+
+func _init(p_network_manager):
+	network_manager = p_network_manager
+
+var sent_data_file = File.new()
 
 var internal_timer = 0.0
 
@@ -17,11 +23,11 @@ var dup_rate: float = 0.0
 
 
 class PendingPacket:
-	extends Reference
+	extends RefCounted
 	var id: int = -1
-	var ref_pool: Reference = null
+	var ref_pool: RefCounted = null
 
-	func _init(p_id: int, p_ref_pool: Reference) -> void:
+	func _init(p_id: int, p_ref_pool: RefCounted):
 		id = p_id
 		ref_pool = p_ref_pool
 
@@ -30,7 +36,7 @@ class PendingPacketTimed:
 	extends PendingPacket
 	var time: float = 0.0
 
-	func _init(p_id: int, p_ref_pool: Reference, p_time: float).(p_id, p_ref_pool) -> void:
+	func _init(p_id: int, p_ref_pool: RefCounted, p_time: float):
 		time = p_time
 
 
@@ -50,7 +56,7 @@ static func save_packet_data(
 	p_sender_peer_id: int,
 	p_target_peer_id: int,
 	p_transfer_mode: int,
-	p_packet: PoolByteArray
+	p_packet: PackedByteArray
 ) -> void:
 	if LOG_SENT_DATA:
 		var transfer_mode_string: String = "?"
@@ -74,7 +80,7 @@ static func save_packet_data(
 		p_file.store_line(send_data_report)
 
 
-func queue_packet_for_send(p_ref_pool: ref_pool_const, p_id: int, p_transfer_mode: int) -> void:
+func queue_packet_for_send(p_ref_pool: Object, p_id: int, p_transfer_mode: int) -> void:
 	match p_transfer_mode:
 		NetworkedMultiplayerPeer.TRANSFER_MODE_UNRELIABLE:
 			unreliable_packet_queue.push_back(PendingPacket.new(p_id, p_ref_pool))
@@ -91,9 +97,9 @@ func send_packet_queue(p_packet_queue: Array, p_transfer_mode: int):
 		get_tree().multiplayer.get_network_peer().set_transfer_mode(p_transfer_mode)
 		for packet in p_packet_queue:
 			if (
-				packet.id == NetworkManager.network_constants_const.ALL_PEERS
-				or packet.id == NetworkManager.network_constants_const.SERVER_MASTER_PEER_ID
-				or NetworkManager.peer_is_connected(packet.id)
+				packet.id == network_constants_const.ALL_PEERS
+				or packet.id == network_constants_const.SERVER_MASTER_PEER_ID
+				or network_manager.peer_is_connected(packet.id)
 			):
 				var send_bytes_result: int = get_tree().multiplayer.send_bytes(
 					packet.ref_pool.pool_byte_array, packet.id, p_transfer_mode
@@ -108,14 +114,14 @@ func send_packet_queue(p_packet_queue: Array, p_transfer_mode: int):
 					if LOG_SENT_DATA:
 						save_packet_data(
 							sent_data_file,
-							NetworkManager.get_current_peer_id(),
+							network_manager.get_current_peer_id(),
 							packet.id,
 							p_transfer_mode,
 							packet.ref_pool.pool_byte_array
 						)
 
 
-func ordered_inserted(p_packet: Reference, p_time_sorted_queue: Array, p_packet_time: float):
+func ordered_inserted(p_packet: RefCounted, p_time_sorted_queue: Array, p_packet_time: float):
 	if p_time_sorted_queue.size():
 		var packet_inserted: bool = false
 		for i in range(0, p_time_sorted_queue.size()):
@@ -142,7 +148,7 @@ func setup_and_send_ordered_queue(
 		var first_packet_time: float = p_time + min_latency + randf() * (max_latency - min_latency)
 		match p_transfer_mode:
 			NetworkedMultiplayerPeer.TRANSFER_MODE_UNRELIABLE:
-				var new_packet: Reference = PendingPacketTimed.new(
+				var new_packet: RefCounted = PendingPacketTimed.new(
 					packet.id, packet.ref_pool, first_packet_time
 				)
 				ordered_inserted(new_packet, p_time_sorted_queue, first_packet_time)
@@ -172,7 +178,7 @@ func setup_and_send_ordered_queue(
 			)
 			match p_transfer_mode:
 				NetworkedMultiplayerPeer.TRANSFER_MODE_UNRELIABLE:
-					var new_packet: Reference = PendingPacketTimed.new(
+					var new_packet: RefCounted = PendingPacketTimed.new(
 						packet.id, packet.ref_pool, dup_packet_time
 					)
 					ordered_inserted(new_packet, p_time_sorted_queue, dup_packet_time)
@@ -191,9 +197,9 @@ func setup_and_send_ordered_queue(
 			var index: int = p_time_sorted_queue.find(packet)
 			assert(index >= 0)
 			if (
-				packet.id == NetworkManager.network_constants_const.ALL_PEERS
-				or packet.id == NetworkManager.network_constants_const.SERVER_MASTER_PEER_ID
-				or NetworkManager.peer_is_connected(packet.id)
+				packet.id == network_constants_const.ALL_PEERS
+				or packet.id == network_constants_const.SERVER_MASTER_PEER_ID
+				or network_manager.peer_is_connected(packet.id)
 			):
 				var send_bytes_result: int = get_tree().multiplayer.send_bytes(
 					packet.ref_pool.pool_byte_array, packet.id, p_transfer_mode
@@ -208,7 +214,7 @@ func setup_and_send_ordered_queue(
 					if LOG_SENT_DATA:
 						save_packet_data(
 							sent_data_file,
-							NetworkManager.get_current_peer_id(),
+							network_manager.get_current_peer_id(),
 							packet.id,
 							p_transfer_mode,
 							packet.ref_pool.pool_byte_array

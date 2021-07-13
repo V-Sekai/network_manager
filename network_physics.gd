@@ -1,12 +1,12 @@
-extends NetworkLogic
-class_name NetworkPhysics
-tool
+@tool
+class_name NetworkPhysics extends NetworkLogic
+
 
 const math_funcs_const = preload("res://addons/math_util/math_funcs.gd")
 const network_entity_manager_const = preload("res://addons/network_manager/network_entity_manager.gd")
 
 
-func on_serialize(p_writer: network_writer_const, p_initial_state: bool) -> network_writer_const:
+func on_serialize(p_writer: Object, p_initial_state: bool) -> Object: # network_writer_const:
 	var physics_node_root = entity_node.simulation_logic_node.get_physics_node()
 
 	if p_initial_state:
@@ -14,7 +14,7 @@ func on_serialize(p_writer: network_writer_const, p_initial_state: bool) -> netw
 
 	var sleeping: bool = (
 		physics_node_root.sleeping
-		or physics_node_root.mode != RigidBody.MODE_RIGID
+		or physics_node_root.mode != RigidBody3D.MODE_RIGID
 	)
 	p_writer.put_8(sleeping)
 	if ! sleeping:
@@ -26,7 +26,7 @@ func on_serialize(p_writer: network_writer_const, p_initial_state: bool) -> netw
 	return p_writer
 
 
-func on_deserialize(p_reader: network_reader_const, p_initial_state: bool) -> network_reader_const:
+func on_deserialize(p_reader: Object, p_initial_state: bool) -> Object: # network_reader_const:
 	received_data = true
 
 	var physics_node_root = entity_node.simulation_logic_node.get_physics_node()
@@ -50,7 +50,7 @@ func on_deserialize(p_reader: network_reader_const, p_initial_state: bool) -> ne
 
 
 func _entity_ready() -> void:
-	._entity_ready()
+	super._entity_ready()
 	if ! Engine.is_editor_hint():
 		if received_data:
 			pass

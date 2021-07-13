@@ -1,15 +1,15 @@
-extends "res://addons/entity_manager/component_node.gd"
-class_name NetworkLogic
-tool
+@tool
+class_name NetworkLogic extends "res://addons/entity_manager/component_node.gd"
+
 
 const network_reader_const = preload("res://addons/network_manager/network_reader.gd")
 const network_writer_const = preload("res://addons/network_manager/network_writer.gd")
 
 # The NetworkLogic node can optionally store a network writer of a fixed
 # size to save on memory reallocation
-var cached_writer: network_writer_const = network_writer_const.new()
+var cached_writer = network_writer_const.new()
 # The size of the cached writer
-export(int) var cached_writer_size: int = 0
+@export var cached_writer_size: int # (int) = 0
 
 # Flag to indicate whether data has been loaded for this node
 var received_data: bool = false
@@ -36,11 +36,11 @@ func is_dirty() -> bool:
 # extra data primarily relevant to the first time the entity
 # has spawned and is unlikely to change during its lifespan.
 # Returns the network writer the data was written to.
-func on_serialize(p_writer: network_writer_const, p_initial_state: bool) -> network_writer_const:
+func on_serialize(p_writer: Object, p_initial_state: bool) -> Object:
 	if p_initial_state:
 		set_dirty(true)
 
-	var writer: network_writer_const = p_writer
+	var writer: Object = p_writer
 	if writer == null:
 		writer = cached_writer
 		if is_dirty():
@@ -61,7 +61,7 @@ func on_serialize(p_writer: network_writer_const, p_initial_state: bool) -> netw
 # The initial state flag indicates whether this reader is going to contain
 # data primarily relevant to the first time the entity has spawned and is
 # unlikely to change during its lifespan. Returns the network reader.
-func on_deserialize(p_reader: network_reader_const, p_initial_state: bool) -> network_reader_const:
+func on_deserialize(p_reader: Object, p_initial_state: bool) -> Object:
 	if p_reader == null:
 		return p_reader
 		
@@ -71,8 +71,8 @@ func on_deserialize(p_reader: network_reader_const, p_initial_state: bool) -> ne
 	return p_reader
 
 
-func _threaded_instance_setup(p_instance_id: int, p_network_reader: Reference) -> void:
-	._threaded_instance_setup(p_instance_id, p_network_reader)
+func _threaded_instance_setup(p_instance_id: int, p_network_reader: RefCounted) -> void:
+	super._threaded_instance_setup(p_instance_id, p_network_reader)
 	
 	for child in get_children():
 		child._threaded_instance_setup(p_instance_id, p_network_reader)
@@ -89,7 +89,7 @@ func _entity_representation_process(p_delta: float) -> void:
 
  
 func cache_nodes() -> void:
-	.cache_nodes()
+	super.cache_nodes()
 	
 
 func _entity_ready() -> void:

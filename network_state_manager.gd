@@ -1,9 +1,8 @@
+@tool
 extends Node
-tool
 
-const ref_pool_const = preload("res://addons/gdutil/ref_pool.gd")
+const ref_pool_const = preload("res://addons/gd_util/ref_pool.gd")
 
-const entity_const = preload("res://addons/entity_manager/entity.gd")
 const network_constants_const = preload("network_constants.gd")
 const network_writer_const = preload("network_writer.gd")
 const network_reader_const = preload("network_reader.gd")
@@ -16,6 +15,11 @@ var time_until_next_send = 0.0
 
 var dummy_state_writer = network_writer_const.new(MAXIMUM_STATE_PACKET_SIZE)  # For debugging purposes
 var state_writers = {}
+
+var network_manager: Object
+
+func _init(p_network_manager):
+	network_manager = p_network_manager
 
 var signal_table: Array = [
 	{
@@ -46,20 +50,20 @@ var signal_table: Array = [
 	},
 ]
 
-"""
+## 
+## 
+## 
 
-"""
-
-"""
-Server
-"""
+## 
+## Server
+## 
 
 
-func write_entity_update_command(p_entity: entity_const, p_network_writer: network_writer_const) -> network_writer_const:
-	p_network_writer = NetworkManager.network_entity_manager.write_entity_instance_id(
+func write_entity_update_command(p_entity: Object, p_network_writer: Object) -> Object:
+	p_network_writer = network_manager.network_entity_manager.write_entity_instance_id(
 		p_entity.network_identity_node.network_instance_id, p_network_writer
 	)
-	var entity_state: network_writer_const = p_entity.network_identity_node.get_state(null, false)
+	var entity_state: Object = p_entity.network_identity_node.get_state(null, false)
 	var entity_state_size = entity_state.get_position()
 	if entity_state_size >= 0xffff:
 		NetworkLogger.error("State data exceeds 16 bits!")
@@ -70,8 +74,8 @@ func write_entity_update_command(p_entity: entity_const, p_network_writer: netwo
 	return p_network_writer
 
 
-func create_entity_command(p_command: int, p_entity: entity_const) -> network_writer_const:
-	var network_writer: network_writer_const = NetworkManager.network_entity_command_writer_cache
+func create_entity_command(p_command: int, p_entity: Object) -> Object:
+	var network_writer: Object = network_manager.network_entity_command_writer_cache
 	network_writer.seek(0)
 
 	match p_command:
@@ -85,7 +89,7 @@ func create_entity_command(p_command: int, p_entity: entity_const) -> network_wr
 
 
 func scrape_and_send_state_data(p_id: int, p_synced_peer: int, p_entities: Array) -> void:
-	var network_writer_state: network_writer_const = null
+	var network_writer_state: Object = null
 
 	if p_synced_peer != -1:
 		network_writer_state = state_writers[p_synced_peer]
@@ -100,14 +104,14 @@ func scrape_and_send_state_data(p_id: int, p_synced_peer: int, p_entities: Array
 			var entity_master: int = entity.get_network_master()
 			if p_synced_peer != entity_master:
 				var is_valid_entity: bool = false
-				if p_id == NetworkManager.network_constants_const.SERVER_MASTER_PEER_ID:
+				if p_id == network_constants_const.SERVER_MASTER_PEER_ID:
 					is_valid_entity = true
 				else:
 					if entity_master == p_id:
 						is_valid_entity = true
 
 				if is_valid_entity:
-					var entity_command_network_writer: network_writer_const = create_entity_command(
+					var entity_command_network_writer: Object = create_entity_command(
 						network_constants_const.UPDATE_ENTITY_COMMAND, entity
 					)
 					network_writer_state.put_writer(
@@ -115,10 +119,10 @@ func scrape_and_send_state_data(p_id: int, p_synced_peer: int, p_entities: Array
 					)
 
 	if network_writer_state.get_position() > 0:
-		var raw_data: PoolByteArray = network_writer_state.get_raw_data(
+		var raw_data: PackedByteArray = network_writer_state.get_raw_data(
 			network_writer_state.get_position()
 		)
-		NetworkManager.network_flow_manager.queue_packet_for_send(
+		network_manager.network_flow_manager.queue_packet_for_send(
 			ref_pool_const.new(raw_data),
 			p_synced_peer,
 			NetworkedMultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED
@@ -128,24 +132,24 @@ func scrape_and_send_state_data(p_id: int, p_synced_peer: int, p_entities: Array
 func _network_manager_process(p_id: int, _delta: float) -> void:
 	time_passed += _delta
 	if time_passed > time_until_next_send:
-		var synced_peers: Array = NetworkManager.copy_valid_send_peers(p_id, false)
+		var synced_peers: Array = network_manager.copy_valid_send_peers(p_id, false)
 		var entities: Array = get_tree().get_nodes_in_group("NetworkedEntities")
 
 		for synced_peer in synced_peers:
 			scrape_and_send_state_data(p_id, synced_peer, entities)
-		if NetworkManager.is_server():
+		if network_manager.is_server():
 			time_until_next_send = time_passed + SERVER_PACKET_SEND_RATE
 		else:
 			time_until_next_send = time_passed + CLIENT_PACKET_SEND_RATE
 
 
-"""
-Client
-"""
+## 
+## Client
+## 
 
 
-func decode_entity_update_command(p_packet_sender_id: int, p_network_reader: network_reader_const) -> network_reader_const:
-	var network_entity_manager: Node = NetworkManager.network_entity_manager
+func decode_entity_update_command(p_packet_sender_id: int, p_network_reader: Object) -> Object:
+	var network_entity_manager: Node = network_manager.network_entity_manager
 
 	if p_network_reader.is_eof():
 		NetworkLogger.error("decode_entity_update_command: eof!")
@@ -161,16 +165,16 @@ func decode_entity_update_command(p_packet_sender_id: int, p_network_reader: net
 		var network_identity_instance: Node = network_entity_manager.network_instance_ids[instance_id]
 		var network_instance_master: int = network_identity_instance.get_network_master()
 		var invalid_sender_id = false
-		if ! NetworkManager.is_relay():
+		if ! network_manager.is_relay():
 			# Only the server will accept state updates for entities directly and other clients will accept them from the host
 			if (
-				(NetworkManager.is_server() and network_instance_master == p_packet_sender_id)
+				(network_manager.is_server() and network_instance_master == p_packet_sender_id)
 				or (
 					(
 						p_packet_sender_id
-						== NetworkManager.network_constants_const.SERVER_MASTER_PEER_ID
+						== network_constants_const.SERVER_MASTER_PEER_ID
 					)
-					and network_instance_master != NetworkManager.get_current_peer_id()
+					and network_instance_master != network_manager.get_current_peer_id()
 				)
 			):
 				network_identity_instance.update_state(p_network_reader, false)
@@ -182,7 +186,7 @@ func decode_entity_update_command(p_packet_sender_id: int, p_network_reader: net
 				network_instance_master == p_packet_sender_id
 				or (
 					p_packet_sender_id
-					== NetworkManager.network_constants_const.SERVER_MASTER_PEER_ID
+					== network_constants_const.SERVER_MASTER_PEER_ID
 				)
 			):
 				network_identity_instance.update_state(p_network_reader, false)
@@ -198,8 +202,8 @@ func decode_entity_update_command(p_packet_sender_id: int, p_network_reader: net
 
 
 func decode_state_buffer(
-	p_packet_sender_id: int, p_network_reader: network_reader_const, p_command: int
-) -> network_reader_const:
+	p_packet_sender_id: int, p_network_reader: Object, p_command: int
+) -> Object:
 	match p_command:
 		network_constants_const.UPDATE_ENTITY_COMMAND:
 			p_network_reader = decode_entity_update_command(p_packet_sender_id, p_network_reader)
@@ -209,18 +213,18 @@ func decode_state_buffer(
 
 func _game_hosted() -> void:
 	state_writers = {}
-	var network_writer: network_writer_const = network_writer_const.new(MAXIMUM_STATE_PACKET_SIZE)
-	state_writers[NetworkManager.network_constants_const.ALL_PEERS] = network_writer
+	var network_writer = network_writer_const.new(MAXIMUM_STATE_PACKET_SIZE)
+	state_writers[network_constants_const.ALL_PEERS] = network_writer
 
 
 func _connected_to_server() -> void:
 	state_writers = {}
-	var network_writer: network_writer_const = network_writer_const.new(MAXIMUM_STATE_PACKET_SIZE)
-	state_writers[NetworkManager.network_constants_const.SERVER_MASTER_PEER_ID] = network_writer
+	var network_writer = network_writer_const.new(MAXIMUM_STATE_PACKET_SIZE)
+	state_writers[network_constants_const.SERVER_MASTER_PEER_ID] = network_writer
 
 
 func _server_peer_connected(p_id: int) -> void:
-	var network_writer: network_writer_const = network_writer_const.new(MAXIMUM_STATE_PACKET_SIZE)
+	var network_writer = network_writer_const.new(MAXIMUM_STATE_PACKET_SIZE)
 	state_writers[p_id] = network_writer
 
 
