@@ -359,7 +359,7 @@ func _network_manager_process(p_id: int, _delta: float) -> void:
 				network_manager.network_flow_manager.queue_packet_for_send(
 					ref_pool_const.new(raw_data),
 					synced_peer,
-					NetworkedMultiplayerPeer.TRANSFER_MODE_RELIABLE
+					MultiplayerPeer.TRANSFER_MODE_RELIABLE
 				)
 
 		# Flush the pending spawn, parenting, and destruction queues

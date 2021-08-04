@@ -220,7 +220,7 @@ func _network_manager_process(p_id: int, _delta: float) -> void:
 				network_manager.network_flow_manager.queue_packet_for_send(
 					ref_pool_const.new(raw_data),
 					synced_peer,
-					NetworkedMultiplayerPeer.TRANSFER_MODE_RELIABLE
+					MultiplayerPeer.TRANSFER_MODE_RELIABLE
 				)
 
 			if network_unreliable_writer_state.get_position() > 0:
@@ -230,7 +230,7 @@ func _network_manager_process(p_id: int, _delta: float) -> void:
 				network_manager.network_flow_manager.queue_packet_for_send(
 					ref_pool_const.new(raw_data),
 					synced_peer,
-					NetworkedMultiplayerPeer.TRANSFER_MODE_UNRELIABLE
+					MultiplayerPeer.TRANSFER_MODE_UNRELIABLE
 				)
 
 		# Flush the pending RPC queues
@@ -325,7 +325,7 @@ func decode_entity_remote_command(p_packet_sender_id: int, p_reliable: bool, p_r
 								network_manager.network_flow_manager.queue_packet_for_send(
 									ref_pool_const.new(raw_data),
 									synced_peer,
-									NetworkedMultiplayerPeer.TRANSFER_MODE_RELIABLE
+									MultiplayerPeer.TRANSFER_MODE_RELIABLE
 								)
 					else:
 						if synced_peers.has(target_id):
@@ -340,7 +340,7 @@ func decode_entity_remote_command(p_packet_sender_id: int, p_reliable: bool, p_r
 								network_manager.network_flow_manager.queue_packet_for_send(
 									ref_pool_const.new(raw_data),
 									target_id,
-									NetworkedMultiplayerPeer.TRANSFER_MODE_UNRELIABLE
+									MultiplayerPeer.TRANSFER_MODE_UNRELIABLE
 								)
 						else:
 							printerr("RPC command has invalid target ID!")

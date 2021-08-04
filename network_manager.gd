@@ -49,7 +49,7 @@ var network_flow_manager: Node = null
 var network_handshake_manager: Node = null
 var network_rpc_manager: Node = null
 
-var compression_mode: int = NetworkedMultiplayerENet.COMPRESS_NONE
+var compression_mode: int = ENetMultiplayerPeer.COMPRESS_NONE
 
 var received_packet_buffer_count: Dictionary = {}
 
@@ -180,7 +180,7 @@ func has_active_peer() -> bool:
 		get_tree().multiplayer.has_network_peer()
 		and (
 			get_tree().multiplayer.network_peer.get_connection_status()
-			!= NetworkedMultiplayerPeer.CONNECTION_DISCONNECTED
+			!= MultiplayerPeer.CONNECTION_DISCONNECTED
 		)
 	)
 
@@ -249,7 +249,7 @@ func host_game(p_port: int, p_max_players: int, p_dedicated: bool, p_relay: bool
 	active_port = p_port
 	active_ip = network_constants_const.LOCALHOST_IP
 
-	var net: NetworkedMultiplayerENet = NetworkedMultiplayerENet.new()
+	var net: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
 	net.compression_mode = compression_mode
 	net.server_relay = p_relay
 	set_relay(p_relay)
@@ -290,7 +290,7 @@ func join_game(p_ip: String, p_port: int) -> bool:
 
 	reset_session_data()
 
-	var net: NetworkedMultiplayerENet = NetworkedMultiplayerENet.new()
+	var net: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
 	net.compression_mode = compression_mode
 
 	if ! p_ip.is_valid_ip_address():
@@ -440,15 +440,15 @@ signal entity_network_id_unregistered(p_network_id)
 func emit_entity_network_id_unregistered(p_network_id: int) -> void:
 	emit_signal("entity_network_id_unregistered", p_network_id)
 
-@master func send_create_server_info() -> void:
+@rpc(master) func send_create_server_info() -> void:
 	NetworkLogger.printl("create_server_info...")
 	emit_signal("create_server_info")
 
-@master func send_create_server_state() -> void:
+@rpc(master) func send_create_server_state() -> void:
 	NetworkLogger.printl("create_server_state...")
 	emit_signal("create_server_state")
 
-@remote func peer_validation_state_error() -> void:
+@rpc(any) func peer_validation_state_error() -> void:
 	NetworkLogger.printl("peer_validation_state_error...")
 	if is_server():
 		rpc("peer_validation_state_error")
@@ -484,8 +484,8 @@ func confirm_server_ready_for_sync() -> void:
 func server_kick_player(p_id: int) -> void:
 	NetworkLogger.printl("server_kick_player...")
 	if is_server():
-		var net: NetworkedMultiplayerPeer = get_tree().multiplayer.get_network_peer()
-		if net and net is NetworkedMultiplayerENet:
+		var net: MultiplayerPeer = get_tree().multiplayer.get_network_peer()
+		if net and net is ENetMultiplayerPeer:
 			net.disconnect_peer(p_id)
 
 			# TODO register disconnection
