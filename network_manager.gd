@@ -627,7 +627,7 @@ func client_request_server_info(p_client_info: Dictionary) -> void:
 	emit_signal("requesting_server_info")
 	network_handshake_manager.rpc_id(
 		network_constants_const.SERVER_MASTER_PEER_ID,
-		"requested_server_info",
+		&"requested_server_info",
 		p_client_info
 	)
 
@@ -635,20 +635,20 @@ func client_request_server_info(p_client_info: Dictionary) -> void:
 func client_request_server_state(_client_state: Dictionary) -> void:
 	emit_signal("requesting_server_state")
 	network_handshake_manager.rpc_id(
-		network_constants_const.SERVER_MASTER_PEER_ID, "requested_server_state", {}
+		network_constants_const.SERVER_MASTER_PEER_ID, &"requested_server_state", {}
 	)
 
 
 func server_send_server_info(p_network_id: int, p_server_info: Dictionary) -> void:
-	network_handshake_manager.rpc_id(p_network_id, "received_server_info", p_server_info)
+	network_handshake_manager.rpc_id(p_network_id, &"received_server_info", p_server_info)
 
 
 func server_send_server_state(p_network_id: int, p_server_state: Dictionary) -> void:
-	network_handshake_manager.rpc_id(p_network_id, "received_server_state", p_server_state)
+	network_handshake_manager.rpc_id(p_network_id, &"received_server_state", p_server_state)
 
 
 func server_send_client_info(p_network_id: int, p_client_id: int, p_client_info: Dictionary) -> void:
-	network_handshake_manager.rpc_id(p_network_id, "received_client_info", p_client_id, p_client_info)
+	network_handshake_manager.rpc_id(p_network_id, &"received_client_info", p_client_id, p_client_info)
 
 func register_peer(p_id) -> void:
 	peer_data[p_id] = {
