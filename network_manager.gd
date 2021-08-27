@@ -250,7 +250,7 @@ func host_game(p_port: int, p_max_players: int, p_dedicated: bool, p_relay: bool
 	active_ip = network_constants_const.LOCALHOST_IP
 
 	var net: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	net.compression_mode = compression_mode
+	### FIXME: net.compression_mode = compression_mode
 	net.server_relay = p_relay
 	set_relay(p_relay)
 
@@ -291,7 +291,7 @@ func join_game(p_ip: String, p_port: int) -> bool:
 	reset_session_data()
 
 	var net: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	net.compression_mode = compression_mode
+	### FIXME: net.compression_mode = compression_mode
 
 	if ! p_ip.is_valid_ip_address():
 		NetworkLogger.printl("Invalid ip address!")

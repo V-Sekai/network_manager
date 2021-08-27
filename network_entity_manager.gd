@@ -146,7 +146,7 @@ func register_network_instance_id(p_network_instance_id: int, p_network_idenity:
 
 	if !network_instance_ids.has(p_network_instance_id):
 		network_instance_ids[p_network_instance_id] = p_network_idenity
-		network_manager.entity_network_id_registered(p_network_instance_id)
+		network_manager.emit_entity_network_id_registered(p_network_instance_id)
 	else:
 		printerr("Attempted to register duplicate network instance_id")
 
@@ -163,7 +163,7 @@ func unregister_network_instance_id(p_network_instance_id: int) -> void:
 				{"network_instance_id": str(p_network_instance_id)}
 			)
 		)
-	network_manager.entity_network_id_unregistered(p_network_instance_id)
+	network_manager.emit_entity_network_id_unregistered(p_network_instance_id)
 
 
 # Returns the network identity node for a given network instance id

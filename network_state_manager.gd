@@ -247,4 +247,4 @@ func is_command_valid(p_command: int) -> bool:
 
 func _ready() -> void:
 	if ! Engine.is_editor_hint():
-		ConnectionUtil.connect_signal_table(signal_table, self)
+		$"/root/ConnectionUtil".connect_signal_table(signal_table, self)

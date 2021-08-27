@@ -82,7 +82,7 @@ func attempt_to_send_server_state_to_peer(p_peer_id: int):
 	if network_manager.server_state_ready:
 		if network_manager.peer_data[p_peer_id]["validation_state"] == network_constants_const.validation_state_enum.VALIDATION_STATE_AWAITING_STATE:
 			network_manager.peer_data[p_peer_id]["validation_state"] = network_constants_const.validation_state_enum.VALIDATION_STATE_STATE_SENT
-			network_manager.requested_server_state(p_peer_id)
+			network_manager.emit_requested_server_state(p_peer_id)
 
 
 # Called by the client once the server has confirmed they have been validated
@@ -93,8 +93,8 @@ func attempt_to_send_server_state_to_peer(p_peer_id: int):
 	network_manager.received_peer_validation_state_update(rpc_sender_id,\
 	network_constants_const.validation_state_enum.VALIDATION_STATE_INFO_SENT)
 	
-	network_manager.received_client_info(rpc_sender_id, p_client_info)
-	network_manager.requested_server_info(rpc_sender_id)
+	network_manager.emit_received_client_info(rpc_sender_id, p_client_info)
+	network_manager.emit_requested_server_info(rpc_sender_id)
 
 
 # Called by the server 
@@ -108,12 +108,12 @@ func attempt_to_send_server_state_to_peer(p_peer_id: int):
 				network_constants_const.RELAY_SERVER_NAME:
 					NetworkLogger.printl("Connected to a relay server...")
 					network_manager.set_relay(true)
-					network_manager.received_server_info(p_server_info)
+					network_manager.emit_received_server_info(p_server_info)
 					return
 				network_constants_const.AUTHORITATIVE_SERVER_NAME:
 					NetworkLogger.printl("Connected to a authoritative server...")
 					network_manager.set_relay(false)
-					network_manager.received_server_info(p_server_info)
+					network_manager.emit_received_server_info(p_server_info)
 					return
 				_:
 					NetworkLogger.error("Unknown server type")
@@ -125,7 +125,7 @@ func attempt_to_send_server_state_to_peer(p_peer_id: int):
 
 @rpc(puppet) func received_client_info(p_client: int, p_client_info: Dictionary) -> void:
 	NetworkLogger.printl("received_client_info...")
-	network_manager.received_client_info(p_client, p_client_info)
+	network_manager.emit_received_client_info(p_client, p_client_info)
 
 
 # Called by client after the basic scene state for the client has been loaded and set up
@@ -142,7 +142,7 @@ func attempt_to_send_server_state_to_peer(p_peer_id: int):
 
 @rpc(puppet) func received_server_state(p_server_state: Dictionary) -> void:
 	NetworkLogger.printl("received_server_state...")
-	network_manager.received_server_state(p_server_state)
+	network_manager.emit_received_server_state(p_server_state)
 
 
 func decode_handshake_buffer(

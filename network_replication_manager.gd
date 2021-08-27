@@ -9,6 +9,7 @@ const network_writer_const = preload("network_writer.gd")
 const MAXIMUM_REPLICATION_PACKET_SIZE = 1024
 
 var network_manager: Object
+var _EntityManager: Node = null
 
 func _init(p_network_manager):
 	network_manager = p_network_manager
@@ -212,7 +213,7 @@ func get_network_scene_id_from_path(p_path: String) -> int:
 
 
 func create_spawn_state_for_new_client(p_network_id: int) -> void:
-	###EntityManager.scene_tree_execution_table._execute_scene_tree_execution_table_unsafe()
+	_EntityManager.scene_tree_execution_table._execute_scene_tree_execution_table_unsafe()
 
 	var ignore_list: Array = []
 	
@@ -465,10 +466,10 @@ func decode_entity_spawn_command(p_packet_sender_id: int, p_network_reader: Obje
 	)
 	entity_instance.set_network_master(network_master)
 
-	###EntityManager.scene_tree_execution_command(
-	###	EntityManager.scene_tree_execution_table_const.ADD_ENTITY,
-	###	entity_instance
-	###)
+	_EntityManager.scene_tree_execution_command(
+		_EntityManager.scene_tree_execution_table_const.ADD_ENTITY,
+		entity_instance
+	)
 
 	return p_network_reader
 
@@ -501,10 +502,10 @@ func decode_entity_destroy_command(p_packet_sender_id: int, p_network_reader: Ob
 
 	if network_entity_manager.network_instance_ids.has(instance_id):
 		var entity_instance: Node = network_entity_manager.get_network_instance_for_instance_id(instance_id)
-		###EntityManager.scene_tree_execution_command(
-		###	EntityManager.scene_tree_execution_table_const.REMOVE_ENTITY,
-		###	entity_instance
-		###)
+		_EntityManager.scene_tree_execution_command(
+			_EntityManager.scene_tree_execution_table_const.REMOVE_ENTITY,
+			entity_instance
+		)
 	else:
 		NetworkLogger.error("Attempted to destroy invalid node")
 
@@ -639,7 +640,7 @@ func request_to_become_master(p_entity_id: int, p_entity: Node, p_id: int) -> vo
 # disconnecting peer
 func _reclaim_peers_entities(p_id: int) -> void:
 	if network_manager.is_session_master():
-		var entities: Array = [] ###EntityManager.get_all_entities()
+		var entities: Array = _EntityManager.get_all_entities()
 		for entity_instance in entities:
 			if entity_instance.get_network_master() == p_id:
 				if entity_instance.can_request_master_from_peer(
@@ -685,5 +686,6 @@ func is_command_valid(p_command: int) -> bool:
 
 
 func _ready() -> void:
+	_EntityManager = $"/root/EntityManager"
 	if ! Engine.is_editor_hint():
-		ConnectionUtil.connect_signal_table(signal_table, self)
+		$"/root/ConnectionUtil".connect_signal_table(signal_table, self)
