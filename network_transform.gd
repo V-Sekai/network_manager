@@ -64,7 +64,7 @@ func on_deserialize(p_reader: Object, p_initial_state: bool) -> Object:
 
 
 func interpolate_transform(p_delta: float) -> void:
-	if is_inside_tree() and ! is_network_master():
+	if is_inside_tree() and ! is_network_authority():
 		if entity_node:
 			var distance: float = current_origin.distance_to(target_origin)
 			if (
@@ -100,7 +100,7 @@ func _entity_physics_process(_delta: float) -> void:
 func _entity_ready() -> void:
 	super._entity_ready()
 	if received_data:
-		if ! is_network_master():
+		if ! is_network_authority():
 			update_transform(Transform3D(Basis(current_rotation), current_origin))
 		received_data = false
 
