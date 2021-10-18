@@ -360,7 +360,7 @@ func _network_manager_process(p_id: int, _delta: float) -> void:
 				network_manager.network_flow_manager.queue_packet_for_send(
 					ref_pool_const.new(raw_data),
 					synced_peer,
-					MultiplayerPeer.TRANSFER_MODE_RELIABLE
+					TRANSFER_MODE_RELIABLE
 				)
 
 		# Flush the pending spawn, parenting, and destruction queues
@@ -464,7 +464,7 @@ func decode_entity_spawn_command(p_packet_sender_id: int, p_network_reader: Obje
 			{"instance_id": str(entity_instance.network_identity_node.network_instance_id)}
 		)
 	)
-	entity_instance.set_network_master(network_master)
+	entity_instance.set_multiplayer_authority(network_master)
 
 	_EntityManager.scene_tree_execution_command(
 		_EntityManager.scene_tree_execution_table_const.ADD_ENTITY,
@@ -642,7 +642,7 @@ func _reclaim_peers_entities(p_id: int) -> void:
 	if network_manager.is_session_master():
 		var entities: Array = _EntityManager.get_all_entities()
 		for entity_instance in entities:
-			if entity_instance.get_network_master() == p_id:
+			if entity_instance.get_multiplayer_authority() == p_id:
 				if entity_instance.can_request_master_from_peer(
 					network_manager.get_current_peer_id()
 				):

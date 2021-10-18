@@ -101,7 +101,7 @@ func scrape_and_send_state_data(p_id: int, p_synced_peer: int, p_entities: Array
 	# Update commands
 	for entity in p_entities:
 		if entity.is_inside_tree():
-			var entity_master: int = entity.get_network_master()
+			var entity_master: int = entity.get_multiplayer_authority()
 			if p_synced_peer != entity_master:
 				var is_valid_entity: bool = false
 				if p_id == network_constants_const.SERVER_MASTER_PEER_ID:
@@ -125,7 +125,7 @@ func scrape_and_send_state_data(p_id: int, p_synced_peer: int, p_entities: Array
 		network_manager.network_flow_manager.queue_packet_for_send(
 			ref_pool_const.new(raw_data),
 			p_synced_peer,
-			MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED
+			TRANSFER_MODE_UNRELIABLE_ORDERED
 		)
 
 
@@ -163,7 +163,7 @@ func decode_entity_update_command(p_packet_sender_id: int, p_network_reader: Obj
 	var entity_state_size: int = p_network_reader.get_u16()
 	if network_entity_manager.network_instance_ids.has(instance_id):
 		var network_identity_instance: Node = network_entity_manager.network_instance_ids[instance_id]
-		var network_instance_master: int = network_identity_instance.get_network_master()
+		var network_instance_master: int = network_identity_instance.get_multiplayer_authority()
 		var invalid_sender_id = false
 		if ! network_manager.is_relay():
 			# Only the server will accept state updates for entities directly and other clients will accept them from the host

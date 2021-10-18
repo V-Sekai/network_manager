@@ -80,7 +80,7 @@ func _entity_ready() -> void:
 
 		set_network_scene_id(
 			NetworkManager.network_replication_manager.get_network_scene_id_from_path(
-				entity_node.filename
+				entity_node.scene_file_path
 			)
 		)
 

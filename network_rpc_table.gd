@@ -20,7 +20,7 @@ func nm_rpc_called(p_sender_id: int, p_method_id: int, p_arg_array: Array):
 		if rpc_mode == MultiplayerAPI.RPC_MODE_REMOTE or MultiplayerAPI.RPC_MODE_REMOTESYNC:
 			callv(method_name, p_arg_array)
 		else:
-			if p_sender_id == get_network_master():
+			if p_sender_id == get_multiplayer_authority():
 				if rpc_mode == MultiplayerAPI.RPC_MODE_PUPPET or MultiplayerAPI.RPC_MODE_PUPPETSYNC:
 					callv("method_name", p_arg_array)
 				else:
@@ -54,7 +54,7 @@ func nm_rset_called(p_sender_id: int, p_property_id: int, p_value):
 		if rpc_mode == MultiplayerAPI.RPC_MODE_REMOTE or MultiplayerAPI.RPC_MODE_REMOTESYNC:
 			set(property_name, p_value)
 		else:
-			if p_sender_id == get_network_master():
+			if p_sender_id == get_multiplayer_authority():
 				if rpc_mode == MultiplayerAPI.RPC_MODE_PUPPET or MultiplayerAPI.RPC_MODE_PUPPETSYNC:
 					set(property_name, p_value)
 				else:

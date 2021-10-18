@@ -133,7 +133,7 @@ func decode_voice_command(p_packet_sender_id: int, p_network_reader: Object) -> 
 					network_manager.network_flow_manager.queue_packet_for_send(
 						ref_pool_const.new(raw_data),
 						synced_peer,
-						MultiplayerPeer.TRANSFER_MODE_UNRELIABLE
+						TRANSFER_MODE_UNRELIABLE
 					)
 
 	if ! network_manager.server_dedicated:
@@ -190,7 +190,7 @@ func _network_manager_process(p_id: int, _delta: float) -> void:
 					network_manager.network_flow_manager.queue_packet_for_send(
 						ref_pool_const.new(raw_data),
 						synced_peer,
-						MultiplayerPeer.TRANSFER_MODE_UNRELIABLE
+						TRANSFER_MODE_UNRELIABLE
 					)
 			sequence_id += 1
 				

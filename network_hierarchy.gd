@@ -121,6 +121,6 @@ func process_parenting():
 func _entity_ready() -> void:
 	super._entity_ready()
 	if received_data:
-		if ! is_network_authority():
+		if ! is_multiplayer_authority():
 			process_parenting()
 		received_data = false
