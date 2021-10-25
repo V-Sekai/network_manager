@@ -14,7 +14,7 @@ func on_serialize(p_writer: Object, p_initial_state: bool) -> Object: # network_
 
 	var sleeping: bool = (
 		physics_node_root.sleeping
-		or physics_node_root.mode != RigidDynamicBody3D.MODE_DYNAMIC
+		or physics_node_root.freeze
 	)
 	p_writer.put_8(sleeping)
 	if ! sleeping:

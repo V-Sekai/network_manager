@@ -118,7 +118,7 @@ func write_entity_spawn_command(p_entity_id: int, p_network_writer: Object) -> O
 		entity_instance, network_entity_manager.networked_scenes, p_network_writer
 	)
 	p_network_writer = network_entity_manager.write_entity_instance_id_for_entity(entity_instance, p_network_writer)
-	p_network_writer = network_entity_manager.write_entity_network_master(
+	p_network_writer = network_entity_manager.write_entity_multiplayer_authority(
 		entity_instance, p_network_writer
 	)
 
@@ -158,7 +158,7 @@ func write_entity_transfer_master_command(p_entity_id: int, p_network_writer: Ob
 	var entity_instance: Node = network_entity_manager.get_network_instance_for_instance_id(p_entity_id)
 
 	p_network_writer = network_entity_manager.write_entity_instance_id_for_entity(entity_instance, p_network_writer)
-	p_network_writer = network_entity_manager.write_entity_network_master(entity_instance, p_network_writer)
+	p_network_writer = network_entity_manager.write_entity_multiplayer_authority(entity_instance, p_network_writer)
 
 	return p_network_writer
 
@@ -422,7 +422,7 @@ func decode_entity_spawn_command(p_packet_sender_id: int, p_network_reader: Obje
 		NetworkLogger.error("decode_entity_spawn_command: eof!")
 		return null
 
-	var network_master: int = network_entity_manager.read_entity_network_master(p_network_reader)
+	var multiplayer_authority: int = network_entity_manager.read_entity_multiplayer_authority(p_network_reader)
 	if p_network_reader.is_eof():
 		NetworkLogger.error("decode_entity_spawn_command: eof!")
 		return null
@@ -464,7 +464,7 @@ func decode_entity_spawn_command(p_packet_sender_id: int, p_network_reader: Obje
 			{"instance_id": str(entity_instance.network_identity_node.network_instance_id)}
 		)
 	)
-	entity_instance.set_multiplayer_authority(network_master)
+	entity_instance.set_multiplayer_authority(multiplayer_authority)
 
 	_EntityManager.scene_tree_execution_command(
 		_EntityManager.scene_tree_execution_table_const.ADD_ENTITY,
@@ -580,7 +580,7 @@ func decode_entity_transfer_master_command(
 		NetworkLogger.error("decode_entity_transfer_master_command: eof!")
 		return null
 
-	var new_network_master: int = network_entity_manager.read_entity_network_master(
+	var new_multiplayer_authority: int = network_entity_manager.read_entity_multiplayer_authority(
 		p_network_reader
 	)
 	if p_network_reader.is_eof():
@@ -596,8 +596,8 @@ func decode_entity_transfer_master_command(
 
 	if network_entity_manager.network_instance_ids.has(instance_id):
 		var entity_instance: Node = network_entity_manager.network_instance_ids[instance_id].get_entity_node()
-		if entity_instance.can_transfer_master_from_session_master(new_network_master):
-			entity_instance.process_master_request(new_network_master)
+		if entity_instance.can_transfer_master_from_session_master(new_multiplayer_authority):
+			entity_instance.process_master_request(new_multiplayer_authority)
 	else:
 		NetworkLogger.error("Attempted to transfer master of invalid node")
 

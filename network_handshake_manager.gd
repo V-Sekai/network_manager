@@ -86,7 +86,7 @@ func attempt_to_send_server_state_to_peer(p_peer_id: int):
 
 
 # Called by the client once the server has confirmed they have been validated
-@rpc(authority) func requested_server_info(p_client_info: Dictionary) -> void:
+@rpc(any_peer) func requested_server_info(p_client_info: Dictionary) -> void:
 	NetworkLogger.printl("requested_server_info...")
 	var rpc_sender_id: int = get_tree().multiplayer.get_rpc_sender_id()
 
@@ -98,7 +98,7 @@ func attempt_to_send_server_state_to_peer(p_peer_id: int):
 
 
 # Called by the server 
-@rpc func received_server_info(p_server_info: Dictionary) -> void:
+@rpc(authority) func received_server_info(p_server_info: Dictionary) -> void:
 	NetworkLogger.printl("received_server_info...")
 	
 	if p_server_info.has("server_type"):
@@ -123,13 +123,13 @@ func attempt_to_send_server_state_to_peer(p_peer_id: int):
 	network_manager.request_network_kill()
 
 
-@rpc func received_client_info(p_client: int, p_client_info: Dictionary) -> void:
+@rpc(authority) func received_client_info(p_client: int, p_client_info: Dictionary) -> void:
 	NetworkLogger.printl("received_client_info...")
 	network_manager.emit_received_client_info(p_client, p_client_info)
 
 
 # Called by client after the basic scene state for the client has been loaded and set up
-@rpc(authority) func requested_server_state(_client_info: Dictionary) -> void:
+@rpc(any_peer) func requested_server_state(_client_info: Dictionary) -> void:
 	NetworkLogger.printl("requested_server_state...")
 	var rpc_sender_id: int = get_tree().multiplayer.get_rpc_sender_id()
 	
@@ -140,7 +140,7 @@ func attempt_to_send_server_state_to_peer(p_peer_id: int):
 	attempt_to_send_server_state_to_peer(rpc_sender_id)
 
 
-@rpc func received_server_state(p_server_state: Dictionary) -> void:
+@rpc(authority) func received_server_state(p_server_state: Dictionary) -> void:
 	NetworkLogger.printl("received_server_state...")
 	network_manager.emit_received_server_state(p_server_state)
 
@@ -174,7 +174,7 @@ func decode_handshake_buffer(
 
 
 # Called after all other clients have been registered to the new client
-@rpc func peer_registration_complete() -> void:
+@rpc(authority) func peer_registration_complete() -> void:
 	# Client does not have direct permission to access this method
 	if not network_manager.is_server() and not network_manager.is_rpc_sender_id_server():
 		return

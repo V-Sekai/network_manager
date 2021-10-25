@@ -13,12 +13,12 @@ const network_reader_const = preload("network_reader.gd")
 const network_constants_const = preload("network_constants.gd")
 
 var multiplayer_signal_table: Array = [
-	{"signal": "network_peer_connected", "method": "_network_peer_connected"},
-	{"signal": "network_peer_disconnected", "method": "_network_peer_disconnected"},
+	{"signal": "peer_connected", "method": "_peer_connected"},
+	{"signal": "peer_disconnected", "method": "_peer_disconnected"},
 	{"signal": "connected_to_server", "method": "_connected_to_server"},
 	{"signal": "connection_failed", "method": "_connection_failed"},
 	{"signal": "server_disconnected", "method": "_server_disconnected"},
-	{"signal": "network_peer_packet", "method": "_network_peer_packet"},
+	{"signal": "peer_packet", "method": "_peer_packet"},
 ]
 
 var network_process_timestep: float = 0.0
@@ -123,7 +123,7 @@ func server_peer_ready(_network_id: int) -> void:
 	attempt_to_reassign_session_master()
 
 
-func _network_peer_connected(p_id: int) -> void:
+func _peer_connected(p_id: int) -> void:
 	register_peer(p_id)
 
 	NetworkLogger.printl("Network peer {id} connected!".format({"id": str(p_id)}))
@@ -135,7 +135,7 @@ func _network_peer_connected(p_id: int) -> void:
 			emit_server_peer_connected(p_id)
 
 
-func _network_peer_disconnected(p_id: int) -> void:
+func _peer_disconnected(p_id: int) -> void:
 	NetworkLogger.printl("Network peer {id} disconnected!".format({"id": str(p_id)}))
 	if ! is_relay():
 		if is_server():
@@ -166,7 +166,7 @@ func get_entity_root_node() -> Node:
 
 
 #Client/Server
-func _network_peer_packet(p_id: int, p_packet: PackedByteArray) -> void:
+func _peer_packet(p_id: int, p_packet: PackedByteArray) -> void:
 	packets_received_this_frame += 1
 	
 	# Reset the timer for this peer
@@ -177,16 +177,16 @@ func _network_peer_packet(p_id: int, p_packet: PackedByteArray) -> void:
 
 func has_active_peer() -> bool:
 	return (
-		get_tree().multiplayer.has_network_peer()
+		get_tree().multiplayer.has_multiplayer_peer()
 		and (
-			get_tree().multiplayer.network_peer.get_connection_status()
+			get_tree().multiplayer.multiplayer_peer.get_connection_status()
 			!= MultiplayerPeer.CONNECTION_DISCONNECTED
 		)
 	)
 
 
 func is_server() -> bool:
-	return ! has_active_peer() or get_tree().multiplayer.is_network_server()
+	return ! has_active_peer() or get_tree().multiplayer.is_server()
 
 
 func is_session_master() -> bool:
@@ -271,7 +271,7 @@ func host_game(p_port: int, p_max_players: int, p_dedicated: bool, p_relay: bool
 			return false
 		OS.delay_msec(100)
 
-	get_tree().multiplayer.set_network_peer(net)
+	get_tree().multiplayer.set_multiplayer_peer(net)
 	get_tree().multiplayer.set_allow_object_decoding(false)
 
 	if server_dedicated:
@@ -308,7 +308,7 @@ func join_game(p_ip: String, p_port: int) -> bool:
 	active_ip = p_ip
 	active_port = p_port
 
-	get_tree().multiplayer.set_network_peer(net)
+	get_tree().multiplayer.set_multiplayer_peer(net)
 	get_tree().multiplayer.set_allow_object_decoding(false)
 
 	NetworkLogger.printl("Connecting to {ip} : {port}!".format({"ip": p_ip, "port": str(p_port)}))
@@ -338,8 +338,8 @@ func reset_session_data() -> void:
 func force_close_connection() -> void:
 	if has_active_peer():
 		NetworkLogger.printl("Closing connection...")
-		if get_tree().multiplayer.has_network_peer():
-			get_tree().multiplayer.set_network_peer(null)
+		if get_tree().multiplayer.has_multiplayer_peer():
+			get_tree().multiplayer.set_multiplayer_peer(null)
 
 	emit_signal("network_flush")
 	reset_session_data()
@@ -372,7 +372,7 @@ func attempt_to_reassign_session_master() -> void:
 
 func get_current_peer_id() -> int:
 	if has_active_peer():
-		var id: int = get_tree().multiplayer.get_network_unique_id()
+		var id: int = get_tree().multiplayer.get_unique_id()
 		return id
 	else:
 		return network_constants_const.SERVER_MASTER_PEER_ID
@@ -390,7 +390,7 @@ func peer_is_connected(p_id: int) -> bool:
 
 func get_connected_peers() -> PackedInt32Array:
 	if has_active_peer():
-		var connected_peers: PackedInt32Array = get_tree().multiplayer.get_network_connected_peers()
+		var connected_peers: PackedInt32Array = get_tree().multiplayer.get_peers()
 		return connected_peers
 	else:
 		return PackedInt32Array()
@@ -440,11 +440,11 @@ signal entity_network_id_unregistered(p_network_id)
 func emit_entity_network_id_unregistered(p_network_id: int) -> void:
 	emit_signal("entity_network_id_unregistered", p_network_id)
 
-@rpc(authority) func send_create_server_info() -> void:
+@rpc(any_peer) func send_create_server_info() -> void:
 	NetworkLogger.printl("create_server_info...")
 	emit_signal("create_server_info")
 
-@rpc(authority) func send_create_server_state() -> void:
+@rpc(any_peer) func send_create_server_state() -> void:
 	NetworkLogger.printl("create_server_state...")
 	emit_signal("create_server_state")
 
@@ -484,7 +484,7 @@ func confirm_server_ready_for_sync() -> void:
 func server_kick_player(p_id: int) -> void:
 	NetworkLogger.printl("server_kick_player...")
 	if is_server():
-		var net: MultiplayerPeer = get_tree().multiplayer.get_network_peer()
+		var net: MultiplayerPeer = get_tree().multiplayer.get_multiplayer_peer()
 		if net and net is ENetMultiplayerPeer:
 			net.disconnect_peer(p_id)
 
@@ -582,7 +582,7 @@ func _process(p_delta: float) -> void:
 					)
 				):
 					emit_signal(
-						"network_process", get_tree().multiplayer.get_network_unique_id(), p_delta
+						"network_process", get_tree().multiplayer.get_unique_id(), p_delta
 					)
 					
 				network_flow_manager.process_network_packets(p_delta)

@@ -93,8 +93,8 @@ func queue_packet_for_send(p_ref_pool: Object, p_id: int, p_transfer_mode: int) 
 
 
 func send_packet_queue(p_packet_queue: Array, p_transfer_mode: int):
-	if get_tree().multiplayer.get_network_peer():
-		get_tree().multiplayer.get_network_peer().set_transfer_mode(p_transfer_mode)
+	if get_tree().multiplayer.get_multiplayer_peer():
+		get_tree().multiplayer.get_multiplayer_peer().set_transfer_mode(p_transfer_mode)
 		for packet in p_packet_queue:
 			if (
 				packet.id == network_constants_const.ALL_PEERS

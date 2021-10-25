@@ -72,14 +72,14 @@ static func read_entity_scene_id(p_reader: Object, p_networked_scenes: Array) ->
 		return p_reader.get_u8()
 
 # Writes the network master id for p_entity to p_writer. Returns the p_writer
-static func write_entity_network_master(p_entity: Object, p_writer: Object) -> Object:
+static func write_entity_multiplayer_authority(p_entity: Object, p_writer: Object) -> Object:
 	p_writer.put_u32(p_entity.get_multiplayer_authority())
 
 	return p_writer
 
 # Reads the network master id for an entity from p_reader.
 # Returns the network master id
-static func read_entity_network_master(p_reader: Object) -> int:
+static func read_entity_multiplayer_authority(p_reader: Object) -> int:
 	return p_reader.get_u32()
 
 # Writes the instance id for p_entity to p_writer. Returns the p_writer
