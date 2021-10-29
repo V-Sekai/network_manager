@@ -9,7 +9,7 @@ const network_entity_manager_const = preload("res://addons/network_manager/netwo
 ##          
 ## Network Instance ID
 ## 
-var network_instance_id: int = 2 :
+var network_instance_id: int = network_entity_manager_const.NULL_NETWORK_INSTANCE_ID :
 	set = set_network_instance_id
 
 var network_scene_id: int = -1 :

@@ -88,7 +88,7 @@ func attempt_to_send_server_state_to_peer(p_peer_id: int):
 # Called by the client once the server has confirmed they have been validated
 @rpc(any_peer) func requested_server_info(p_client_info: Dictionary) -> void:
 	NetworkLogger.printl("requested_server_info...")
-	var rpc_sender_id: int = get_tree().multiplayer.get_rpc_sender_id()
+	var rpc_sender_id: int = get_tree().multiplayer.get_remote_sender_id()
 
 	network_manager.received_peer_validation_state_update(rpc_sender_id,\
 	network_constants_const.validation_state_enum.VALIDATION_STATE_INFO_SENT)
@@ -131,7 +131,7 @@ func attempt_to_send_server_state_to_peer(p_peer_id: int):
 # Called by client after the basic scene state for the client has been loaded and set up
 @rpc(any_peer) func requested_server_state(_client_info: Dictionary) -> void:
 	NetworkLogger.printl("requested_server_state...")
-	var rpc_sender_id: int = get_tree().multiplayer.get_rpc_sender_id()
+	var rpc_sender_id: int = get_tree().multiplayer.get_remote_sender_id()
 	
 	# This peer is waiting for the server state, but we may not be able to send it yet if the server has not fully loaded, so sit tight...
 	network_manager.received_peer_validation_state_update(rpc_sender_id,\

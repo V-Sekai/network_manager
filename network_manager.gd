@@ -217,7 +217,7 @@ func set_relay(p_is_relay: bool) -> void:
 
 func is_rpc_sender_id_server() -> bool:
 	return (
-		get_tree().multiplayer.get_rpc_sender_id()
+		get_tree().multiplayer.get_remote_sender_id()
 		== network_constants_const.SERVER_MASTER_PEER_ID
 	)
 

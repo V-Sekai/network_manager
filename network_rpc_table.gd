@@ -6,7 +6,7 @@ var virtual_rpc_property_table: Dictionary = {}
 
 var sender_id: int = -1
 
-func get_rpc_sender_id() -> int:
+func get_remote_sender_id() -> int:
 	return sender_id
 
 func nm_rpc_called(p_sender_id: int, p_method_id: int, p_arg_array: Array):
@@ -156,21 +156,14 @@ func nm_rset_unreliable_id(peer_id: int, p_property: String, p_value):
 
 
 func sanitise_rpc() -> void:
-	var method_list: Array = get_method_list()
-	var xself: Object = self
-	for method in method_list:
-		var rpc_mode: int = xself.rpc_get_mode(method.name)
-		if rpc_mode != MultiplayerAPI.RPC_MODE_DISABLED: ##### FIXME: Missing method in godot master # 
-			virtual_rpc_method_table[method.name] = {"rpc_mode": rpc_mode}
-			rpc_config(method.name, MultiplayerAPI.RPC_MODE_DISABLED)
-
-	# Note: rset was removed in Godot master, thank goodness.
-	#var property_list: Array = get_property_list()
-	#for property in property_list:
-	#	var rpc_mode: int = xself.rpc_get_mode(property.name)
-	#	if rpc_mode != MultiplayerAPI.RPC_MODE_DISABLED:
-	#		virtual_rpc_property_table[property.name] = {"rpc_mode": rpc_mode}
-	#		xself.rset_config(property.name, MultiplayerAPI.RPC_MODE_DISABLED)
+	pass
+	#var method_list: Array = get_method_list()
+	#for method in method_list:
+	#	# FIXME: rpc_get_mode is missing
+	#	var rpc_mode: int = rpc_get_mode(method.name)
+	#	if rpc_mode != MultiplayerAPI.RPC_MODE_DISABLED: ##### FIXME: Missing method in godot master # 
+	#		virtual_rpc_method_table[method.name] = {"rpc_mode": rpc_mode}
+	#		rpc_config(method.name, MultiplayerAPI.RPC_MODE_DISABLED)
 
 
 func _ready():
