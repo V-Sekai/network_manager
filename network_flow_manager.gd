@@ -36,7 +36,7 @@ class PendingPacketTimed:
 	extends PendingPacket
 	var time: float = 0.0
 
-	func _init(p_id: int, p_ref_pool: RefCounted, p_time: float):
+	func _init(_p_id: int, _p_ref_pool: RefCounted, p_time: float):
 		time = p_time
 
 
