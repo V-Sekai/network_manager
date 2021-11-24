@@ -74,12 +74,12 @@ func _network_id_registered_added(p_entity_id: int) -> void:
 func _network_id_unregistered_added(p_entity_id: int) -> void:
 	if network_manager.is_server():
 		if network_entity_ids_pending_request_transfer_master.has(p_entity_id):
-			network_entity_ids_pending_request_transfer_master.remove(
+			network_entity_ids_pending_request_transfer_master.remove_at(
 				network_entity_ids_pending_request_transfer_master.find(p_entity_id)
 			)
 
 		if network_entity_ids_pending_spawn.has(p_entity_id):
-			network_entity_ids_pending_spawn.remove(network_entity_ids_pending_spawn.find(p_entity_id))
+			network_entity_ids_pending_spawn.remove_at(network_entity_ids_pending_spawn.find(p_entity_id))
 		else:
 			network_entity_ids_pending_destruction.push_back(p_entity_id)
 

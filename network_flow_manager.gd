@@ -220,7 +220,7 @@ func setup_and_send_ordered_queue(
 							packet.ref_pool.pool_byte_array
 						)
 
-			p_time_sorted_queue.remove(index)
+			p_time_sorted_queue.remove_at(index)
 
 	return p_time_sorted_queue
 
