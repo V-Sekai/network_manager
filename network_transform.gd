@@ -2,7 +2,7 @@
 class_name NetworkTransform extends NetworkLogic
 
 
-const network_entity_manager_const = preload("network_entity_manager.gd")
+const network_entity_manager_const = preload("res://addons/network_manager/network_entity_manager.gd")
 const math_funcs_const = preload("res://addons/math_util/math_funcs.gd")
 
 var target_origin: Vector3 = Vector3()
