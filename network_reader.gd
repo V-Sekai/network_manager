@@ -149,7 +149,7 @@ func get_buffer(p_size) -> PackedByteArray:
 		return PackedByteArray()
 
 	var pos: int = stream_peer_buffer.get_position()
-	var buffer: PackedByteArray = stream_peer_buffer.data_array.subarray(pos, pos + p_size - 1)
+	var buffer: PackedByteArray = stream_peer_buffer.data_array.slice(pos, pos + p_size)
 	stream_peer_buffer.seek(pos + p_size)
 
 	return buffer
