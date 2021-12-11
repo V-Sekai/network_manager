@@ -13,7 +13,7 @@ func get_raw_data(p_size: int = 0) -> PackedByteArray:
 	if stream_peer_buffer.data_array.size() == p_size or p_size <= 0:
 		return stream_peer_buffer.data_array
 	else:
-		return stream_peer_buffer.data_array.subarray(0, p_size - 1)
+		return stream_peer_buffer.data_array.slice(0, p_size)
 
 
 func clear() -> void:
@@ -46,7 +46,7 @@ func put_data(p_data: PackedByteArray) -> void:
 
 func put_ranged_data(p_data: PackedByteArray, p_position: int, p_length: int) -> void:
 	if p_length > 0:
-		var subarray: PackedByteArray = p_data.subarray(p_position, p_position + p_length - 1)
+		var subarray: PackedByteArray = p_data.slice(p_position, p_position + p_length)
 		if stream_peer_buffer.put_data(subarray) != OK:
 			NetworkLogger.error("put_ranged_data returned an error!")
 
@@ -56,7 +56,7 @@ func put_writer(p_writer, p_size: int = 0) -> void:
 		if p_writer.get_size() == p_size:
 			put_data(p_writer.stream_peer_buffer.data_array)
 		else:
-			put_data(p_writer.stream_peer_buffer.data_array.subarray(0, p_size - 1))
+			put_data(p_writer.stream_peer_buffer.data_array.slice(0, p_size))
 
 
 func put_8(p_value: int) -> void:
