@@ -13,9 +13,9 @@ var current_rotation: Quaternion = Quaternion()
 
 signal transform_updated(p_transform)
 
-@export  var origin_interpolation_factor: float # (float) = 0.0
-@export  var rotation_interpolation_factor: float # (float) = 0.0
-@export  var snap_threshold: float # (float) = 0.0
+@export var origin_interpolation_factor: float = 0.0
+@export var rotation_interpolation_factor: float = 0.0
+@export var snap_threshold: float = 0.0
 
 static func write_transform(p_writer: Object, p_transform: Transform3D) -> void:
 	p_writer.put_vector3(p_transform.origin)

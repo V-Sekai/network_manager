@@ -7,8 +7,8 @@ const network_entity_manager_const = preload("res://addons/network_manager/netwo
 var parent_id: int = network_entity_manager_const.NULL_NETWORK_INSTANCE_ID
 var attachment_id: int = 0
 
-@export  var sync_parent: bool # (bool) = false
-@export  var sync_attachment: bool # (bool) = false
+@export var sync_parent: bool = false
+@export var sync_attachment: bool = false
 
 
 static func encode_parent_id(p_writer: Object, p_id: int) -> Object:

@@ -9,7 +9,7 @@ const network_writer_const = preload("res://addons/network_manager/network_write
 # size to save on memory reallocation
 var cached_writer = network_writer_const.new()
 # The size of the cached writer
-@export var cached_writer_size: int # (int) = 0
+@export var cached_writer_size: int = 0
 
 # Flag to indicate whether data has been loaded for this node
 var received_data: bool = false
