@@ -339,6 +339,7 @@ func force_close_connection() -> void:
 	if has_active_peer():
 		NetworkLogger.printl("Closing connection...")
 		if get_tree().multiplayer.has_multiplayer_peer():
+			get_tree().multiplayer.get_multiplayer_peer().close_connection()
 			get_tree().multiplayer.set_multiplayer_peer(null)
 
 	emit_signal("network_flush")
