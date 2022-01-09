@@ -15,7 +15,7 @@ static func decode_24_bit_value(p_buffer: PackedByteArray) -> int:
 
 
 func _init(p_buffer: PackedByteArray):
-	assert(typeof(p_buffer) == TYPE_RAW_ARRAY)
+	assert(typeof(p_buffer) == TYPE_PACKED_BYTE_ARRAY)
 	stream_peer_buffer = StreamPeerBuffer.new()
 	stream_peer_buffer.data_array = p_buffer
 

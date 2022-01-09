@@ -193,7 +193,7 @@ func _ready() -> void:
 
 	var networked_objects_property_info: Dictionary = {
 		"name": "network/config/networked_scenes",
-		"type": TYPE_STRING_ARRAY,
+		"type": TYPE_PACKED_STRING_ARRAY,
 		"hint": PROPERTY_HINT_FILE,
 		"hint_string": ""
 	}
@@ -202,7 +202,7 @@ func _ready() -> void:
 
 	if ! Engine.is_editor_hint():
 		var network_scenes_config = ProjectSettings.get_setting("network/config/networked_scenes")
-		if typeof(network_scenes_config) != TYPE_STRING_ARRAY:
+		if typeof(network_scenes_config) != TYPE_PACKED_STRING_ARRAY:
 			networked_scenes = Array()
 		else:
 			networked_scenes = Array(network_scenes_config)
