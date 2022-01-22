@@ -741,13 +741,13 @@ func _ready():
 
 func _enter_tree() -> void:
 	#Add sub managers to the tree
-	add_child(network_replication_manager)
-	add_child(network_state_manager)
-	add_child(network_voice_manager)
-	add_child(network_entity_manager)
-	add_child(network_flow_manager)
-	add_child(network_handshake_manager)
-	add_child(network_rpc_manager)
+	add_child(network_replication_manager, true)
+	add_child(network_state_manager, true)
+	add_child(network_voice_manager, true)
+	add_child(network_entity_manager, true)
+	add_child(network_flow_manager, true)
+	add_child(network_handshake_manager, true)
+	add_child(network_rpc_manager, true)
 
 
 func _init():
