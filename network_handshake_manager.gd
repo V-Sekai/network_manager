@@ -179,7 +179,8 @@ func decode_handshake_buffer(
 	if not network_manager.is_server() and not network_manager.is_rpc_sender_id_server():
 		return
 
-	emit_signal("peer_registration_complete")
+	# FIXME(lyuma): the original code emitted this signal on the wrong object. emitting here might be unnecessary.
+	network_manager.peer_registration_complete.emit()
 
 
 func is_command_valid(p_command: int) -> bool:

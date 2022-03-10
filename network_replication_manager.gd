@@ -249,7 +249,7 @@ func create_spawn_state_for_new_client(p_network_id: int) -> void:
 
 	network_entity_ignore_table[p_network_id] = ignore_list
 
-	emit_signal("spawn_state_for_new_client_ready", p_network_id, network_writer_state)
+	spawn_state_for_new_client_ready.emit(p_network_id, network_writer_state)
 
 
 func flush() -> void:

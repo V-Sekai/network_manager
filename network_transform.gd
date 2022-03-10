@@ -29,7 +29,7 @@ static func read_transform(p_reader: Object) -> Transform3D:
 
 
 func update_transform(p_transform: Transform3D) -> void:
-	emit_signal("transform_updated", p_transform)
+	transform_updated.emit(p_transform)
 
 
 func on_serialize(p_writer: Object, p_initial_state: bool) -> Object:

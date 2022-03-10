@@ -95,11 +95,11 @@ signal peer_registration_complete
 
 signal server_peer_connected(p_id)
 func emit_server_peer_connected(p_id: int) -> void:
-	emit_signal("server_peer_connected", p_id)
+	server_peer_connected.emit(p_id)
 
 signal server_peer_disconnected(p_id)
 func emit_server_peer_disconnected(p_id: int) -> void:
-	emit_signal("server_peer_disconnected", p_id)
+	server_peer_disconnected.emit(p_id)
 
 signal connection_failed
 signal connection_succeeded
@@ -112,7 +112,7 @@ signal server_state_ready
 
 signal voice_packet_compressed(p_peer_id, p_sequence_id, p_buffer)
 func emit_voice_packet_compressedx(p_peer_id: int, p_sequence_id: int, p_buffer: PackedByteArray) -> void:
-	emit_signal("voice_packet_compressed", p_peer_id, p_sequence_id, p_buffer)
+	voice_packet_compressed.emit(p_peer_id, p_sequence_id, p_buffer)
 
 
 signal peer_became_active(p_network_id)
@@ -147,18 +147,18 @@ func _peer_disconnected(p_id: int) -> void:
 
 #Clients
 func _connected_to_server() -> void:
-	emit_signal("connection_succeeded")
-	emit_signal("peer_registration_complete")
+	connection_succeeded.emit()
+	peer_registration_complete.emit()
 
 
 func _connection_failed() -> void:
 	NetworkLogger.printl("Connection failed")
-	emit_signal("connection_failed")
+	connection_failed.emit()
 
 
 func _server_disconnected() -> void:
 	NetworkLogger.printl("Server disconnected")
-	emit_signal("server_disconnected")
+	server_disconnected.emit()
 
 
 func get_entity_root_node() -> Node:
@@ -172,7 +172,7 @@ func _peer_packet(p_id: int, p_packet: PackedByteArray) -> void:
 	# Reset the timer for this peer
 	peer_data[p_id]["time_since_last_update_received"] = 0.0
 	
-	emit_signal("network_peer_packet", p_id, p_packet)
+	network_peer_packet.emit(p_id, p_packet)
 
 
 func has_active_peer() -> bool:
@@ -278,7 +278,7 @@ func host_game(p_port: int, p_max_players: int, p_dedicated: bool, p_relay: bool
 		NetworkLogger.printl("Server hosted on port {port}".format({"port": str(active_port)}))
 		NetworkLogger.printl("Max clients: {max_players}".format({"port": str(max_players)}))
 
-	emit_signal("game_hosted")
+	game_hosted.emit()
 
 	return true
 
@@ -325,14 +325,14 @@ func reset_session_data() -> void:
 	client_state = network_constants_const.validation_state_enum.VALIDATION_STATE_NONE
 	var peers: PackedInt32Array = get_connected_peers()
 	for peer_id in peers:
-		emit_signal("peer_unregistered", peer_id)
+		peer_unregistered.emit(peer_id)
 	active_peers = []
 	session_master = -1
 	server_dedicated = false
 
 	network_flow_manager.reset()
 
-	emit_signal("session_data_reset")
+	session_data_reset.emit()
 
 
 func force_close_connection() -> void:
@@ -342,9 +342,9 @@ func force_close_connection() -> void:
 			get_tree().multiplayer.get_multiplayer_peer().close_connection()
 			get_tree().multiplayer.set_multiplayer_peer(null)
 
-	emit_signal("network_flush")
+	network_flush.emit()
 	reset_session_data()
-	emit_signal("connection_killed")
+	connection_killed.emit()
 
 
 func attempt_to_reassign_session_master() -> void:
@@ -415,39 +415,39 @@ signal peer_validation_state_error_callback
 
 signal requested_server_info(p_id)
 func emit_requested_server_info(p_id: int) -> void:
-	emit_signal("requested_server_info", p_id)
+	requested_server_info.emit(p_id)
 
 signal received_server_info(p_info)
 func emit_received_server_info(p_info: Dictionary) -> void:
-	emit_signal("received_server_info", p_info)
+	received_server_info.emit(p_info)
 
 signal requested_server_state(p_id)
 func emit_requested_server_state(p_id: int) -> void:
-	emit_signal("requested_server_state", p_id)
+	requested_server_state.emit(p_id)
 
 signal received_server_state(p_state)
 func emit_received_server_state(p_state: Dictionary) -> void:
-	emit_signal("received_server_state", p_state)
+	received_server_state.emit(p_state)
 
 signal received_client_info(p_id, p_info)
 func emit_received_client_info(p_id: int, p_info: Dictionary) -> void:
-	emit_signal("received_client_info", p_id, p_info)
+	received_client_info.emit(p_id, p_info)
 
 signal entity_network_id_registered(p_network_id)
 func emit_entity_network_id_registered(p_network_id: int) -> void:
-	emit_signal("entity_network_id_registered", p_network_id)
+	entity_network_id_registered.emit(p_network_id)
 
 signal entity_network_id_unregistered(p_network_id)
 func emit_entity_network_id_unregistered(p_network_id: int) -> void:
-	emit_signal("entity_network_id_unregistered", p_network_id)
+	entity_network_id_unregistered.emit(p_network_id)
 
 @rpc(any_peer) func send_create_server_info() -> void:
 	NetworkLogger.printl("create_server_info...")
-	emit_signal("create_server_info")
+	create_server_info.emit()
 
 @rpc(any_peer) func send_create_server_state() -> void:
 	NetworkLogger.printl("create_server_state...")
-	emit_signal("create_server_state")
+	create_server_state.emit()
 
 @rpc(any_peer) func peer_validation_state_error() -> void:
 	NetworkLogger.printl("peer_validation_state_error...")
@@ -458,7 +458,7 @@ func emit_entity_network_id_unregistered(p_network_id: int) -> void:
 		if not is_rpc_sender_id_server():
 			return
 
-	emit_signal("peer_validation_state_error_callback")
+	peer_validation_state_error_callback.emit()
 
 
 func confirm_client_ready_for_sync(p_network_id: int) -> void:
@@ -474,7 +474,7 @@ func confirm_client_ready_for_sync(p_network_id: int) -> void:
 
 		active_peers.push_back(p_network_id)
 		
-	emit_signal("peer_became_active", p_network_id)
+	peer_became_active.emit(p_network_id)
 
 
 func confirm_server_ready_for_sync() -> void:
@@ -575,16 +575,9 @@ func _process(p_delta: float) -> void:
 					for peer in peers:
 						peer_data[peer]["time_since_last_update_received"] += p_delta
 				
-				if (
-					is_server()
-					or (
-						client_state
-						== network_constants_const.validation_state_enum.VALIDATION_STATE_SYNCED
-					)
-				):
-					emit_signal(
-						"network_process", get_tree().multiplayer.get_unique_id(), p_delta
-					)
+				if (is_server() or
+						client_state == network_constants_const.validation_state_enum.VALIDATION_STATE_SYNCED):
+					network_process.emit(get_tree().multiplayer.get_unique_id(), p_delta)
 					
 				network_flow_manager.process_network_packets(p_delta)
 
@@ -625,7 +618,7 @@ func get_network_scene_paths() -> Array:
 
 
 func client_request_server_info(p_client_info: Dictionary) -> void:
-	emit_signal("requesting_server_info")
+	requesting_server_info.emit()
 	network_handshake_manager.rpc_id(
 		network_constants_const.SERVER_MASTER_PEER_ID,
 		&"requested_server_info",
@@ -634,7 +627,7 @@ func client_request_server_info(p_client_info: Dictionary) -> void:
 
 
 func client_request_server_state(_client_state: Dictionary) -> void:
-	emit_signal("requesting_server_state")
+	requesting_server_state.emit()
 	network_handshake_manager.rpc_id(
 		network_constants_const.SERVER_MASTER_PEER_ID, &"requested_server_state", {}
 	)
@@ -659,8 +652,8 @@ func register_peer(p_id) -> void:
 	}
 
 	NetworkLogger.printl("peer_registered:{id}".format({"id": str(p_id)}))
-	emit_signal("peer_registered", p_id)
-	emit_signal("peer_list_changed")
+	peer_registered.emit(p_id)
+	peer_list_changed.emit()
 
 
 func unregister_peer(p_id) -> void:
@@ -669,8 +662,8 @@ func unregister_peer(p_id) -> void:
 	
 	assert(peer_data.erase(p_id))
 	NetworkLogger.printl("peer_unregistered:{id}".format({"id": str(p_id)}))
-	emit_signal("peer_unregistered", p_id)
-	emit_signal("peer_list_changed")
+	peer_unregistered.emit(p_id)
+	peer_list_changed.emit()
 
 func setup_project_settings() -> void:
 	var should_save: bool = false
@@ -716,7 +709,7 @@ func setup_project_settings() -> void:
 		
 func confirm_server_state_ready() -> void:
 	server_state_readyx = true
-	emit_signal("server_state_ready")
+	server_state_ready.emit()
 
 ########
 # Node #
