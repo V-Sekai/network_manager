@@ -177,16 +177,16 @@ func _peer_packet(p_id: int, p_packet: PackedByteArray) -> void:
 
 func has_active_peer() -> bool:
 	return (
-		get_tree().multiplayer.has_multiplayer_peer()
+		get_tree().get_multiplayer().has_multiplayer_peer()
 		and (
-			get_tree().multiplayer.multiplayer_peer.get_connection_status()
+			get_tree().get_multiplayer().multiplayer_peer.get_connection_status()
 			!= MultiplayerPeer.CONNECTION_DISCONNECTED
 		)
 	)
 
 
 func is_server() -> bool:
-	return ! has_active_peer() or get_tree().multiplayer.is_server()
+	return ! has_active_peer() or get_tree().get_multiplayer().is_server()
 
 
 func is_session_master() -> bool:
@@ -271,8 +271,8 @@ func host_game(p_port: int, p_max_players: int, p_dedicated: bool, p_relay: bool
 			return false
 		OS.delay_msec(100)
 
-	get_tree().multiplayer.set_multiplayer_peer(net)
-	get_tree().multiplayer.set_allow_object_decoding(false)
+	get_tree().get_multiplayer().set_multiplayer_peer(net)
+	get_tree().get_multiplayer().set_allow_object_decoding(false)
 
 	if server_dedicated:
 		NetworkLogger.printl("Server hosted on port {port}".format({"port": str(active_port)}))
@@ -391,7 +391,7 @@ func peer_is_connected(p_id: int) -> bool:
 
 func get_connected_peers() -> PackedInt32Array:
 	if has_active_peer():
-		var connected_peers: PackedInt32Array = get_tree().multiplayer.get_peers()
+		var connected_peers: PackedInt32Array = get_tree().get_multiplayer().get_peers()
 		return connected_peers
 	else:
 		return PackedInt32Array()
@@ -577,7 +577,7 @@ func _process(p_delta: float) -> void:
 				
 				if (is_server() or
 						client_state == network_constants_const.validation_state_enum.VALIDATION_STATE_SYNCED):
-					network_process.emit(get_tree().multiplayer.get_unique_id(), p_delta)
+					network_process.emit(get_tree().get_multiplayer().get_unique_id(), p_delta)
 					
 				network_flow_manager.process_network_packets(p_delta)
 
@@ -722,7 +722,7 @@ func _ready():
 		network_process_frame_timeslice = 1.0 / network_fps
 		for current_signal in multiplayer_signal_table:
 			if (
-				get_tree().multiplayer.connect(current_signal["signal"], Callable(self, current_signal.method))
+				get_tree().get_multiplayer().connect(current_signal["signal"], Callable(self, current_signal.method))
 				!= 0
 			):
 				NetworkLogger.error(
