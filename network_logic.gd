@@ -75,16 +75,20 @@ func _threaded_instance_setup(p_instance_id: int, p_network_reader: RefCounted) 
 	super._threaded_instance_setup(p_instance_id, p_network_reader)
 	
 	for child in get_children():
-		child._threaded_instance_setup(p_instance_id, p_network_reader)
+		if child.has_method("_threaded_instance_setup"):
+			child._threaded_instance_setup(p_instance_id, p_network_reader)
 
 func _entity_physics_process(p_delta: float) -> void:
 	if ! Engine.is_editor_hint():
 		for child in get_children():
-			child._entity_physics_process(p_delta)
+			if child.has_method("_entity_physics_process"):
+				child._entity_physics_process(p_delta)
 
 func _entity_representation_process(p_delta: float) -> void:
 	if ! Engine.is_editor_hint():
 		for child in get_children():
+			if not child.has_method("_entity_representation_process"):
+				continue
 			child._entity_representation_process(p_delta)
 
  
@@ -96,9 +100,11 @@ func _entity_ready() -> void:
 	cached_writer.resize(cached_writer_size)
 	
 	for child in get_children():
-		child._entity_ready()
+		if child.has_method("_entity_ready"):
+			child._entity_ready()
 		
 func _entity_about_to_add() -> void:
 	if ! Engine.is_editor_hint():
 		for child in get_children():
-			child._entity_about_to_add()
+			if child.has_method("_entity_about_to_add"):
+				child._entity_about_to_add()

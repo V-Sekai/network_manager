@@ -240,7 +240,7 @@ func _network_manager_process(p_id: int, _delta: float) -> void:
 func decode_entity_remote_command(p_packet_sender_id: int, p_reliable: bool, p_rpc: bool, p_network_reader: Object) -> Object:
 	var network_entity_manager: Node = network_manager.network_entity_manager
 	var sender_id: int = p_packet_sender_id
-	var target_id: int = get_tree().multiplayer.get_unique_id()
+	var target_id: int = get_tree().get_multiplayer().get_unique_id()
 
 	if p_network_reader.is_eof():
 		NetworkLogger.error("decode_entity_remote_command: eof!")
@@ -286,7 +286,7 @@ func decode_entity_remote_command(p_packet_sender_id: int, p_reliable: bool, p_r
 	if network_entity_manager.network_instance_ids.has(instance_id):
 		var entity_instance: Node = network_entity_manager.network_instance_ids[instance_id].get_entity_node()
 		if entity_instance:
-			if target_id == get_tree().multiplayer.get_unique_id() or target_id == 0:
+			if target_id == get_tree().get_multiplayer().get_unique_id() or target_id == 0:
 				var rpc_table: Node = entity_instance.get_rpc_table()
 				if rpc_table:
 					if p_rpc:
@@ -294,7 +294,7 @@ func decode_entity_remote_command(p_packet_sender_id: int, p_reliable: bool, p_r
 					else:
 						rpc_table.nm_rset_called(p_packet_sender_id, method_id, args)
 
-			if target_id != get_tree().multiplayer.get_unique_id() or target_id == 0:
+			if target_id != get_tree().get_multiplayer().get_unique_id() or target_id == 0:
 				if ! network_manager.is_relay() and network_manager.is_server():
 					var command_type: int
 					if p_reliable:

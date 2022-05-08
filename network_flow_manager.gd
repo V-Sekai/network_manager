@@ -101,7 +101,7 @@ func send_packet_queue(p_packet_queue: Array, p_transfer_mode: int):
 				or packet.id == network_constants_const.SERVER_MASTER_PEER_ID
 				or network_manager.peer_is_connected(packet.id)
 			):
-				var send_bytes_result: int = get_tree().multiplayer.send_bytes(
+				var send_bytes_result: int = get_tree().get_multiplayer().send_bytes(
 					packet.ref_pool.pool_byte_array, packet.id, p_transfer_mode
 				)
 				if send_bytes_result != OK:
@@ -201,7 +201,7 @@ func setup_and_send_ordered_queue(
 				or packet.id == network_constants_const.SERVER_MASTER_PEER_ID
 				or network_manager.peer_is_connected(packet.id)
 			):
-				var send_bytes_result: int = get_tree().multiplayer.send_bytes(
+				var send_bytes_result: int = get_tree().get_multiplayer().send_bytes(
 					packet.ref_pool.pool_byte_array, packet.id, p_transfer_mode
 				)
 				if send_bytes_result != OK:

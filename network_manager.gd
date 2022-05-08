@@ -217,7 +217,7 @@ func set_relay(p_is_relay: bool) -> void:
 
 func is_rpc_sender_id_server() -> bool:
 	return (
-		get_tree().multiplayer.get_remote_sender_id()
+		get_tree().get_multiplayer().get_remote_sender_id()
 		== network_constants_const.SERVER_MASTER_PEER_ID
 	)
 
@@ -308,8 +308,8 @@ func join_game(p_ip: String, p_port: int) -> bool:
 	active_ip = p_ip
 	active_port = p_port
 
-	get_tree().multiplayer.set_multiplayer_peer(net)
-	get_tree().multiplayer.set_allow_object_decoding(false)
+	get_tree().get_multiplayer().set_multiplayer_peer(net)
+	get_tree().get_multiplayer().set_allow_object_decoding(false)
 
 	NetworkLogger.printl("Connecting to {ip} : {port}!".format({"ip": p_ip, "port": str(p_port)}))
 
@@ -338,9 +338,9 @@ func reset_session_data() -> void:
 func force_close_connection() -> void:
 	if has_active_peer():
 		NetworkLogger.printl("Closing connection...")
-		if get_tree().multiplayer.has_multiplayer_peer():
-			get_tree().multiplayer.get_multiplayer_peer().close_connection()
-			get_tree().multiplayer.set_multiplayer_peer(null)
+		if get_tree().get_multiplayer().has_multiplayer_peer():
+			get_tree().get_multiplayer().get_multiplayer_peer().close_connection()
+			get_tree().get_multiplayer().set_multiplayer_peer(null)
 
 	network_flush.emit()
 	reset_session_data()
@@ -373,7 +373,7 @@ func attempt_to_reassign_session_master() -> void:
 
 func get_current_peer_id() -> int:
 	if has_active_peer():
-		var id: int = get_tree().multiplayer.get_unique_id()
+		var id: int = get_tree().get_multiplayer().get_unique_id()
 		return id
 	else:
 		return network_constants_const.SERVER_MASTER_PEER_ID
@@ -485,7 +485,7 @@ func confirm_server_ready_for_sync() -> void:
 func server_kick_player(p_id: int) -> void:
 	NetworkLogger.printl("server_kick_player...")
 	if is_server():
-		var net: MultiplayerPeer = get_tree().multiplayer.get_multiplayer_peer()
+		var net: MultiplayerPeer = get_tree().get_multiplayer().get_multiplayer_peer()
 		if net and net is ENetMultiplayerPeer:
 			net.disconnect_peer(p_id)
 
