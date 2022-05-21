@@ -49,7 +49,7 @@ var network_flow_manager: Node = null
 var network_handshake_manager: Node = null
 var network_rpc_manager: Node = null
 
-var compression_mode: int = ENetConnection.COMPRESS_ZSTD
+var compression_mode: int = ENetConnection.COMPRESS_NONE
 
 var received_packet_buffer_count: Dictionary = {}
 
@@ -250,7 +250,7 @@ func host_game(p_port: int, p_max_players: int, p_dedicated: bool, p_relay: bool
 	active_ip = network_constants_const.LOCALHOST_IP
 
 	var net: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	net.compression_mode = compression_mode
+	### FIXME: net.compression_mode = compression_mode
 	net.server_relay = p_relay
 	set_relay(p_relay)
 
