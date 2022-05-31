@@ -13,7 +13,6 @@ var network_manager: Object
 func _init(p_network_manager):
 	network_manager = p_network_manager
 
-var x = '''
 var dummy_rpc_reliable_writer = network_writer_const.new(MAXIMUM_RPC_PACKET_SIZE)  # For debugging purposes
 var rpc_reliable_writers = {}
 var dummy_rpc_unreliable_writer = network_writer_const.new(MAXIMUM_RPC_PACKET_SIZE)  # For debugging purposes
@@ -419,4 +418,3 @@ func is_command_valid(p_command: int) -> bool:
 func _ready() -> void:
 	if ! Engine.is_editor_hint():
 		ConnectionUtil.connect_signal_table(signal_table, self)
-'''
