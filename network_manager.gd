@@ -659,7 +659,7 @@ func register_peer(p_id) -> void:
 func unregister_peer(p_id) -> void:
 	if active_peers.has(p_id):
 		active_peers.erase(p_id)
-	if peer_data == null:
+	if not peer_data.has(p_id):
 		return
 	assert(peer_data.erase(p_id))
 	NetworkLogger.printl("peer_unregistered:{id}".format({"id": str(p_id)}))
