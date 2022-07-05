@@ -136,8 +136,8 @@ func decode_voice_command(p_packet_sender_id: int, p_network_reader: Object) -> 
 						TRANSFER_MODE_UNRELIABLE
 					)
 
-	if ! network_manager.server_dedicated:
-		network_manager.voice_packet_compressed(sender_id, encoded_sequence_id, encoded_voice_byte_array)
+	if not network_manager.server_dedicated:
+		network_manager.voice_packet_compressed.emit(sender_id, encoded_sequence_id, encoded_voice_byte_array)
 
 	return p_network_reader
 
