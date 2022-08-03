@@ -125,7 +125,7 @@ func scrape_and_send_state_data(p_id: int, p_synced_peer: int, p_entities: Array
 		network_manager.network_flow_manager.queue_packet_for_send(
 			ref_pool_const.new(raw_data),
 			p_synced_peer,
-			TRANSFER_MODE_UNRELIABLE_ORDERED
+			MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED
 		)
 
 

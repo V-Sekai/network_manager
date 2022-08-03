@@ -61,11 +61,11 @@ static func save_packet_data(
 	if LOG_SENT_DATA:
 		var transfer_mode_string: String = "?"
 		match p_transfer_mode:
-			TRANSFER_MODE_UNRELIABLE:
+			MultiplayerPeer.TRANSFER_MODE_UNRELIABLE:
 				transfer_mode_string = "Unreliable"
-			TRANSFER_MODE_UNRELIABLE_ORDERED:
+			MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED:
 				transfer_mode_string = "Unreliable Ordered"
-			TRANSFER_MODE_RELIABLE:
+			MultiplayerPeer.TRANSFER_MODE_RELIABLE:
 				transfer_mode_string = "Reliable Ordered"
 
 		var send_data_report: String = (
@@ -82,11 +82,11 @@ static func save_packet_data(
 
 func queue_packet_for_send(p_ref_pool: Object, p_id: int, p_transfer_mode: int) -> void:
 	match p_transfer_mode:
-		TRANSFER_MODE_UNRELIABLE:
+		MultiplayerPeer.TRANSFER_MODE_UNRELIABLE:
 			unreliable_packet_queue.push_back(PendingPacket.new(p_id, p_ref_pool))
-		TRANSFER_MODE_UNRELIABLE_ORDERED:
+		MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED:
 			unreliable_ordered_packet_queue.push_back(PendingPacket.new(p_id, p_ref_pool))
-		TRANSFER_MODE_RELIABLE:
+		MultiplayerPeer.TRANSFER_MODE_RELIABLE:
 			reliable_packet_queue.push_back(PendingPacket.new(p_id, p_ref_pool))
 		_:
 			NetworkLogger.error("Attempted to queue packet with invalid transfer mode!")
@@ -141,18 +141,18 @@ func setup_and_send_ordered_queue(
 	p_time: float, p_queue: Array, p_time_sorted_queue: Array, p_transfer_mode: int
 ) -> Array:
 	for packet in p_queue:
-		if p_transfer_mode != TRANSFER_MODE_RELIABLE:
+		if p_transfer_mode != MultiplayerPeer.TRANSFER_MODE_RELIABLE:
 			if randf() < drop_rate:
 				continue
 
 		var first_packet_time: float = p_time + min_latency + randf() * (max_latency - min_latency)
 		match p_transfer_mode:
-			TRANSFER_MODE_UNRELIABLE:
+			MultiplayerPeer.TRANSFER_MODE_UNRELIABLE:
 				var new_packet: RefCounted = PendingPacketTimed.new(
 					packet.id, packet.ref_pool, first_packet_time
 				)
 				ordered_inserted(new_packet, p_time_sorted_queue, first_packet_time)
-			TRANSFER_MODE_UNRELIABLE_ORDERED:
+			MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED:
 				var latest_time: float = 0.0
 				if p_time_sorted_queue.size() > 0:
 					latest_time = p_time_sorted_queue.back().time
@@ -160,7 +160,7 @@ func setup_and_send_ordered_queue(
 					p_time_sorted_queue.append(
 						PendingPacketTimed.new(packet.id, packet.ref_pool, first_packet_time)
 					)
-			TRANSFER_MODE_RELIABLE:
+			MultiplayerPeer.TRANSFER_MODE_RELIABLE:
 				var latest_time: float = 0.0
 				if p_time_sorted_queue.size() > 0:
 					latest_time = p_time_sorted_queue.back().time
@@ -177,12 +177,12 @@ func setup_and_send_ordered_queue(
 				+ randf() * (max_latency - min_latency)
 			)
 			match p_transfer_mode:
-				TRANSFER_MODE_UNRELIABLE:
+				MultiplayerPeer.TRANSFER_MODE_UNRELIABLE:
 					var new_packet: RefCounted = PendingPacketTimed.new(
 						packet.id, packet.ref_pool, dup_packet_time
 					)
 					ordered_inserted(new_packet, p_time_sorted_queue, dup_packet_time)
-				TRANSFER_MODE_UNRELIABLE_ORDERED:
+				MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED:
 					var latest_time: float = 0.0
 					if p_time_sorted_queue.size() > 0:
 						latest_time = p_time_sorted_queue.back().time
@@ -233,28 +233,28 @@ func process_network_packets(p_delta: float) -> void:
 			internal_timer,
 			reliable_packet_queue,
 			reliable_packet_queue_time_sorted,
-			TRANSFER_MODE_RELIABLE
+			MultiplayerPeer.TRANSFER_MODE_RELIABLE
 		)
 		unreliable_packet_queue_time_sorted = setup_and_send_ordered_queue(
 			internal_timer,
 			unreliable_packet_queue,
 			unreliable_packet_queue_time_sorted,
-			TRANSFER_MODE_UNRELIABLE
+			MultiplayerPeer.TRANSFER_MODE_UNRELIABLE
 		)
 		unreliable_ordered_packet_queue_time_sorted = setup_and_send_ordered_queue(
 			internal_timer,
 			unreliable_ordered_packet_queue,
 			unreliable_ordered_packet_queue_time_sorted,
-			TRANSFER_MODE_UNRELIABLE_ORDERED
+			MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED
 		)
 	else:
-		send_packet_queue(reliable_packet_queue, TRANSFER_MODE_RELIABLE)
+		send_packet_queue(reliable_packet_queue, MultiplayerPeer.TRANSFER_MODE_RELIABLE)
 		send_packet_queue(
-			unreliable_packet_queue, TRANSFER_MODE_UNRELIABLE
+			unreliable_packet_queue, MultiplayerPeer.TRANSFER_MODE_UNRELIABLE
 		)
 		send_packet_queue(
 			unreliable_ordered_packet_queue,
-			TRANSFER_MODE_UNRELIABLE_ORDERED
+			MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED
 		)
 
 	clear_packet_queues()

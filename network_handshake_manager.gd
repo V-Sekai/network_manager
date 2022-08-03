@@ -39,7 +39,7 @@ func ready_command(p_id: int) -> void:
 	if network_writer.get_position() > 0:
 		var raw_data: PackedByteArray = network_writer.get_raw_data(network_writer.get_position())
 		network_manager.network_flow_manager.queue_packet_for_send(
-			ref_pool_const.new(raw_data), p_id, TRANSFER_MODE_RELIABLE
+			ref_pool_const.new(raw_data), p_id, MultiplayerPeer.TRANSFER_MODE_RELIABLE
 		)
 
 
@@ -60,7 +60,7 @@ func disconnect_command(p_disconnected_peer_id: int) -> void:
 			network_manager.network_flow_manager.queue_packet_for_send(
 				ref_pool_const.new(raw_data),
 				synced_peer,
-				TRANSFER_MODE_RELIABLE
+				MultiplayerPeer.TRANSFER_MODE_RELIABLE
 			)
 
 
@@ -74,7 +74,7 @@ func session_master_command(p_id: int, p_new_master: int) -> void:
 	if network_writer.get_position() > 0:
 		var raw_data: PackedByteArray = network_writer.get_raw_data(network_writer.get_position())
 		network_manager.network_flow_manager.queue_packet_for_send(
-			ref_pool_const.new(raw_data), p_id, TRANSFER_MODE_RELIABLE
+			ref_pool_const.new(raw_data), p_id, MultiplayerPeer.TRANSFER_MODE_RELIABLE
 		)
 
 
