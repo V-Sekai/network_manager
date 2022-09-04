@@ -1,4 +1,4 @@
-class_name NetworkSpawn extends Position3D
+class_name NetworkSpawn extends Marker3D
 
 
 

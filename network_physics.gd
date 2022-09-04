@@ -7,7 +7,7 @@ const network_entity_manager_const = preload("res://addons/network_manager/netwo
 
 
 func on_serialize(p_writer: Object, p_initial_state: bool) -> Object: # network_writer_const:
-	var physics_node_root: RigidDynamicBody3D = entity_node.simulation_logic_node.get_physics_node()
+	var physics_node_root: RigidBody3D = entity_node.simulation_logic_node.get_physics_node()
 
 	if p_initial_state:
 		p_writer.put_float(physics_node_root.get_mass())
@@ -29,7 +29,7 @@ func on_serialize(p_writer: Object, p_initial_state: bool) -> Object: # network_
 func on_deserialize(p_reader: Object, p_initial_state: bool) -> Object: # network_reader_const:
 	received_data = true
 
-	var physics_node_root: RigidDynamicBody3D = entity_node.simulation_logic_node.get_physics_node()
+	var physics_node_root: RigidBody3D = entity_node.simulation_logic_node.get_physics_node()
 
 	if p_initial_state:
 		physics_node_root.set_mass(p_reader.get_float())
