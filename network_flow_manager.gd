@@ -10,7 +10,7 @@ var network_manager: Object
 func _init(p_network_manager):
 	network_manager = p_network_manager
 
-var sent_data_file = File.new()
+var sent_data_file : FileAccess = null
 
 var internal_timer = 0.0
 
@@ -52,7 +52,7 @@ var reliable_packet_queue_time_sorted: Array = []
 var packet_peer_target: Dictionary = {}
 
 static func save_packet_data(
-	p_file: File,
+	p_file: FileAccess,
 	p_sender_peer_id: int,
 	p_target_peer_id: int,
 	p_transfer_mode: int,
@@ -280,7 +280,7 @@ func reset():
 
 func _ready() -> void:
 	if LOG_SENT_DATA:
-		sent_data_file = File.new()
+		sent_data_file = FileAccess.new()
 		var datetime: Dictionary = Time.get_datetime_dict_from_system(true)
 
 		sent_data_file.open(
@@ -295,5 +295,5 @@ func _ready() -> void:
 					str(datetime.second)
 				]
 			),
-			File.WRITE
+			FileAccess.WRITE
 		)
