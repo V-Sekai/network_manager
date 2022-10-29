@@ -251,10 +251,10 @@ func host_game(p_port: int, p_max_players: int, p_dedicated: bool, p_relay: bool
 
 	var net: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
 	### FIXME: net.compression_mode = compression_mode
-	net.server_relay = p_relay
+	multiplayer.server_relay = p_relay
 	set_relay(p_relay)
 
-	if net.server_relay:
+	if multiplayer.server_relay:
 		NetworkLogger.printl("Attempting to host relay server...")
 	else:
 		NetworkLogger.printl("Attempting to host authoritative server...")
