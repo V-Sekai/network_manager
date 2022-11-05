@@ -280,10 +280,9 @@ func reset():
 
 func _ready() -> void:
 	if LOG_SENT_DATA:
-		sent_data_file = FileAccess.new()
 		var datetime: Dictionary = Time.get_datetime_dict_from_system(true)
 
-		sent_data_file.open(
+		sent_data_file = FileAccess.open(
 			(
 				"user://sent_data_file_%s_%s_%s_%s_%s_%s"
 				% [
