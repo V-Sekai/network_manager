@@ -49,7 +49,7 @@ var network_flow_manager: Node = null
 var network_handshake_manager: Node = null
 var network_rpc_manager: Node = null
 
-var compression_mode: int = ENetConnection.COMPRESS_NONE
+var compression_mode: int = ENetConnection.COMPRESS_ZSTD
 
 var received_packet_buffer_count: Dictionary = {}
 
