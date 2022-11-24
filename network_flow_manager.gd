@@ -2,6 +2,7 @@
 extends Node
 
 const network_constants_const = preload("network_constants.gd")
+const network_flow_manager_const = preload("res://addons/network_manager/network_flow_manager.gd")
 
 const LOG_SENT_DATA = false
 
@@ -112,7 +113,7 @@ func send_packet_queue(p_packet_queue: Array, p_transfer_mode: int):
 					)
 				else:
 					if LOG_SENT_DATA:
-						save_packet_data(
+						network_flow_manager_const.save_packet_data(
 							sent_data_file,
 							network_manager.get_current_peer_id(),
 							packet.id,
@@ -212,7 +213,7 @@ func setup_and_send_ordered_queue(
 					)
 				else:
 					if LOG_SENT_DATA:
-						save_packet_data(
+						network_flow_manager_const.save_packet_data(
 							sent_data_file,
 							network_manager.get_current_peer_id(),
 							packet.id,

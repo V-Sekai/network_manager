@@ -3,6 +3,7 @@ extends RefCounted
 
 var eof_reached: bool = false
 var stream_peer_buffer: StreamPeerBuffer = null
+const network_reader_const = preload("res://addons/network_manager/network_writer.gd")
 
 static func decode_24_bit_value(p_buffer: PackedByteArray) -> int:
 	var integer: int = 0
@@ -66,7 +67,7 @@ func get_24() -> int:
 	if stream_peer_buffer.big_endian:
 		value_buffer.reverse()
 
-	return decode_24_bit_value(value_buffer)
+	return network_reader_const.decode_24_bit_value(value_buffer)
 
 
 func get_32() -> int:

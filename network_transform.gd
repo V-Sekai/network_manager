@@ -38,7 +38,7 @@ func on_serialize(p_writer: Object, p_initial_state: bool) -> Object:
 
 	# Transform
 	var transform: Transform3D = entity_node.simulation_logic_node.get_transform()
-	write_transform(p_writer, transform)
+	NetworkTransform.write_transform(p_writer, transform)
 
 	return p_writer
 
@@ -47,7 +47,7 @@ func on_deserialize(p_reader: Object, p_initial_state: bool) -> Object:
 	received_data = true
 		
 	# Transform
-	var transform: Transform3D = read_transform(p_reader)
+	var transform: Transform3D = NetworkTransform.read_transform(p_reader)
 
 	var origin: Vector3 = transform.origin
 	var rotation: Quaternion = transform.basis.get_rotation_quaternion()

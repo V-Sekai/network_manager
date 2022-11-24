@@ -5,6 +5,7 @@ const ref_pool_const = preload("res://addons/gd_util/ref_pool.gd")
 
 const network_constants_const = preload("network_constants.gd")
 const network_writer_const = preload("network_writer.gd")
+const connection_util_const = preload("res://addons/gd_util/connection_util.gd")
 
 var signal_table: Array = [
 	{
@@ -208,4 +209,4 @@ func _server_state_ready() -> void:
 
 func _ready() -> void:
 	if ! Engine.is_editor_hint():
-		ConnectionUtil.connect_signal_table(signal_table, self)
+		connection_util_const.connect_signal_table(signal_table, self)

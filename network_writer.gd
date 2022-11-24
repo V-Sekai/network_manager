@@ -2,6 +2,7 @@
 extends RefCounted
 
 var stream_peer_buffer: StreamPeerBuffer = StreamPeerBuffer.new()
+const network_writer_const = preload("res://addons/network_manager/network_writer.gd")
 
 static func encode_24_bit_value(p_value: int) -> PackedByteArray:
 	return PackedByteArray(
@@ -68,7 +69,7 @@ func put_16(p_value: int) -> void:
 
 
 func put_24(p_value: int) -> void:
-	var value_buffer: PackedByteArray = encode_24_bit_value(p_value)
+	var value_buffer: PackedByteArray = network_writer_const.encode_24_bit_value(p_value)
 	if stream_peer_buffer.big_endian:
 		value_buffer.reverse()
 	put_data(value_buffer)
