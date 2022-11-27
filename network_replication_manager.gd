@@ -195,7 +195,9 @@ func get_network_scene_id_from_path(p_path: String) -> int:
 
 		# If a valid packed scene was not found, try next to search for it via its inheritance chain
 		if network_scene_id == -1:
-			if path != "res://addons/vsk_entities/vsk_interactable_prop.tscn":
+			if (path != "res://addons/vsk_entities/vsk_player.tscn" and
+					path != "res://addons/vsk_entities/vsk_interactable_prop.tscn" and
+					path != "res://addons/vsk_entities/vsk_test_entity.tscn"):
 				push_error("SECURITY: " + str(self) + "@" + str(self.get_path()) + ": Checking for resource at " + str(path))
 				break
 			if ResourceLoader.exists(path):
@@ -386,7 +388,9 @@ func get_scene_path_for_scene_id(p_scene_id: int) -> String:
 
 
 func get_packed_scene_for_path(p_path: String) -> PackedScene:
-	if p_path != "res://addons/vsk_entities/vsk_interactable_prop.tscn":
+	if (p_path != "res://addons/vsk_entities/vsk_player.tscn" and
+			p_path != "res://addons/vsk_entities/vsk_interactable_prop.tscn" and
+			p_path != "res://addons/vsk_entities/vsk_test_entity.tscn"):
 		push_error("SECURITY: " + str(self) + "@" + str(self.get_path()) + ": get_packed_scene_for_path at " + str(p_path))
 		return null
 
