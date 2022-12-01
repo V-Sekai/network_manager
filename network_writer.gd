@@ -10,6 +10,10 @@ static func encode_24_bit_value(p_value: int) -> PackedByteArray:
 
 
 func get_raw_data(p_size: int = 0) -> PackedByteArray:
+	#var str = ""
+	#for b in range(stream_peer_buffer.data_array.size() if p_size == 0 else p_size):
+	#	str += "0x%02x, " % (stream_peer_buffer.data_array[b])
+	#print("WRITING PACKET: " + str)
 	if stream_peer_buffer.data_array.size() == p_size or p_size <= 0:
 		return stream_peer_buffer.data_array
 	else:

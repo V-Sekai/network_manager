@@ -495,8 +495,13 @@ func server_kick_player(p_id: int) -> void:
 func decode_buffer(p_id: int, p_buffer: PackedByteArray) -> void:
 	if OS.is_stdout_verbose():
 		LogManager.printl("--- Packet received from {id} ---".format({"id": p_id}))
+	#var str = "READING PACKET: "
+	#for b in range(len(p_buffer)):
+	#	str += "0x%02x, " % (p_buffer[b])
+	#print(str)
 
 	var network_reader = network_reader_const.new(p_buffer)
+	var network_reader_orig = network_reader
 
 	while network_reader:
 		var command = network_reader.get_u8()
@@ -529,8 +534,8 @@ func decode_buffer(p_id: int, p_buffer: PackedByteArray) -> void:
 			LogManager.error("Invalid command: {command}".format({"command": str(command)}))
 
 		if OS.is_stdout_verbose():
-			if network_reader:
-				var end_position: int = network_reader.get_position()
+			if network_reader_orig:
+				var end_position: int = network_reader_orig.get_position()
 				var command_string: String = network_constants_const.get_string_for_command(command)
 				var command_size: int = end_position - start_position
 
@@ -549,8 +554,8 @@ func decode_buffer(p_id: int, p_buffer: PackedByteArray) -> void:
 	if ! received_packet_buffer_count.has(p_id):
 		received_packet_buffer_count[p_id] = 0
 
-	if OS.is_stdout_verbose():
-		var size: int = network_reader.get_position()
+	if OS.is_stdout_verbose() and network_reader_orig:
+		var size: int = network_reader_orig.get_position()
 		LogManager.printl(
 			"--- Finished processing packet {count} from peer {id}, packet size: {size} ---".format(
 				{"count": received_packet_buffer_count[p_id], "id": p_id, "size": size}
