@@ -17,27 +17,16 @@ func nm_rpc_called(p_sender_id: int, p_method_id: int, p_arg_array: Array):
 	if p_method_id < keys.size() and p_method_id >= 0:
 		var method_name: String = keys[p_method_id]
 		var rpc_mode: int = virtual_rpc_method_table[method_name].rpc_mode
-		if rpc_mode == MultiplayerAPI.RPC_MODE_REMOTE or MultiplayerAPI.RPC_MODE_REMOTESYNC:
+		if rpc_mode == MultiplayerAPI.RPC_MODE_ANY_PEER:
 			callv(method_name, p_arg_array)
+		elif rpc_mode == MultiplayerAPI.RPC_MODE_AUTHORITY:
+			callv("method_name", p_arg_array)
 		else:
-			if p_sender_id == get_multiplayer_authority():
-				if rpc_mode == MultiplayerAPI.RPC_MODE_PUPPET or MultiplayerAPI.RPC_MODE_PUPPETSYNC:
-					callv("method_name", p_arg_array)
-				else:
-					NetworkLogger.error(
-						"Cannot call {method_name} from peer {sender_id}!".format(
-							{"method_name": method_name, "sender_id": str(p_sender_id)}
-						)
-					)
-			else:
-				if rpc_mode == MultiplayerAPI.RPC_MODE_MASTER or MultiplayerAPI.RPC_MODE_MASTERSYNC:
-					callv("method_name", p_arg_array)
-				else:
-					NetworkLogger.error(
-						"Cannot call {method_name} from peer {sender_id}!".format(
-							{"method_name": method_name, "sender_id": str(p_sender_id)}
-						)
-					)
+			NetworkLogger.error(
+				"Cannot call {method_name} from peer {sender_id}!".format(
+					{"method_name": method_name, "sender_id": str(p_sender_id)}
+				)
+			)
 	else:
 		NetworkLogger.error("Cannot find method for id %s!" % str(p_method_id))
 	
