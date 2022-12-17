@@ -1,18 +1,19 @@
 class_name NetworkRPCTable extends "res://addons/entity_manager/component_node.gd"
 
-
 var virtual_rpc_method_table: Dictionary = {}
 var virtual_rpc_property_table: Dictionary = {}
 
 var sender_id: int = -1
 
+
 func get_remote_sender_id() -> int:
 	return sender_id
+
 
 func nm_rpc_called(p_sender_id: int, p_method_id: int, p_arg_array: Array):
 	var original_sender_id: int = sender_id
 	sender_id = p_sender_id
-	
+
 	var keys: Array = virtual_rpc_method_table.keys()
 	if p_method_id < keys.size() and p_method_id >= 0:
 		var method_name: String = keys[p_method_id]
@@ -22,20 +23,17 @@ func nm_rpc_called(p_sender_id: int, p_method_id: int, p_arg_array: Array):
 		elif rpc_mode == MultiplayerAPI.RPC_MODE_AUTHORITY:
 			callv("method_name", p_arg_array)
 		else:
-			NetworkLogger.error(
-				"Cannot call {method_name} from peer {sender_id}!".format(
-					{"method_name": method_name, "sender_id": str(p_sender_id)}
-				)
-			)
+			NetworkLogger.error("Cannot call {method_name} from peer {sender_id}!".format({"method_name": method_name, "sender_id": str(p_sender_id)}))
 	else:
 		NetworkLogger.error("Cannot find method for id %s!" % str(p_method_id))
-	
+
 	sender_id = original_sender_id
+
 
 func nm_rset_called(p_sender_id: int, p_property_id: int, p_value):
 	var original_sender_id: int = sender_id
 	sender_id = p_sender_id
-	
+
 	var keys: Array = virtual_rpc_property_table.keys()
 	if p_property_id < keys.size() and p_property_id >= 0:
 		var property_name: String = keys[p_property_id]
@@ -47,24 +45,17 @@ func nm_rset_called(p_sender_id: int, p_property_id: int, p_value):
 				if rpc_mode == MultiplayerAPI.RPC_MODE_PUPPET or MultiplayerAPI.RPC_MODE_PUPPETSYNC:
 					set(property_name, p_value)
 				else:
-					NetworkLogger.error(
-						"Cannot set {property_name} from peer {sender_id}!".format(
-							{"property_name": property_name, "sender_id": str(p_sender_id)}
-						)
-					)
+					NetworkLogger.error("Cannot set {property_name} from peer {sender_id}!".format({"property_name": property_name, "sender_id": str(p_sender_id)}))
 			else:
 				if rpc_mode == MultiplayerAPI.RPC_MODE_MASTER or MultiplayerAPI.RPC_MODE_MASTERSYNC:
 					set(property_name, p_value)
 				else:
-					NetworkLogger.error(
-						"Cannot set {property_name} from peer {sender_id}!".format(
-							{"property_name": property_name, "sender_id": str(p_sender_id)}
-						)
-					)
+					NetworkLogger.error("Cannot set {property_name} from peer {sender_id}!".format({"property_name": property_name, "sender_id": str(p_sender_id)}))
 	else:
 		NetworkLogger.error("Cannot find property for id %s!" % str(p_property_id))
 
 	sender_id = original_sender_id
+
 
 func _nm_rpcp(p_peer_id: int, p_unreliable: bool, p_method: String, p_arg_array: Array):
 	var keys: Array = virtual_rpc_method_table.keys()
@@ -72,11 +63,7 @@ func _nm_rpcp(p_peer_id: int, p_unreliable: bool, p_method: String, p_arg_array:
 	for i in range(0, keys.size()):
 		if keys[i] == p_method:
 			var rpc_mode: int = virtual_rpc_method_table[p_method].rpc_mode
-			if (
-				rpc_mode == MultiplayerAPI.RPC_MODE_MASTERSYNC
-				or MultiplayerAPI.RPC_MODE_PUPPETSYNC
-				or MultiplayerAPI.RPC_MODE_REMOTESYNC
-			):
+			if rpc_mode == MultiplayerAPI.RPC_MODE_MASTERSYNC or MultiplayerAPI.RPC_MODE_PUPPETSYNC or MultiplayerAPI.RPC_MODE_REMOTESYNC:
 				callv(p_method, p_arg_array)
 			method_id = i
 
@@ -95,11 +82,7 @@ func _nm_rsetp(p_peer_id: int, p_unreliable: bool, p_property: String, p_value):
 	for i in range(0, keys.size()):
 		if keys[i] == p_property:
 			var rpc_mode: int = virtual_rpc_property_table[p_property].rpc_mode
-			if (
-				rpc_mode == MultiplayerAPI.RPC_MODE_MASTERSYNC
-				or MultiplayerAPI.RPC_MODE_PUPPETSYNC
-				or MultiplayerAPI.RPC_MODE_REMOTESYNC
-			):
+			if rpc_mode == MultiplayerAPI.RPC_MODE_MASTERSYNC or MultiplayerAPI.RPC_MODE_PUPPETSYNC or MultiplayerAPI.RPC_MODE_REMOTESYNC:
 				set(p_property, p_value)
 			property_id = i
 
@@ -150,7 +133,7 @@ func sanitise_rpc() -> void:
 	#for method in method_list:
 	#	# FIXME: rpc_get_mode is missing
 	#	var rpc_mode: int = rpc_get_mode(method.name)
-	#	if rpc_mode != MultiplayerAPI.RPC_MODE_DISABLED: ##### FIXME: Missing method in godot master # 
+	#	if rpc_mode != MultiplayerAPI.RPC_MODE_DISABLED: ##### FIXME: Missing method in godot master #
 	#		virtual_rpc_method_table[method.name] = {"rpc_mode": rpc_mode}
 	#		rpc_config(method.name, MultiplayerAPI.RPC_MODE_DISABLED)
 

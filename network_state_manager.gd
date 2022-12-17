@@ -18,51 +18,31 @@ var state_writers = {}
 
 var network_manager: Object
 
+
 func _init(p_network_manager):
 	network_manager = p_network_manager
 
+
 var signal_table: Array = [
-	{
-		"singleton": "NetworkManager",
-		"signal": "network_process",
-		"method": "_network_manager_process"
-	},
-	{
-		"singleton": "NetworkManager",
-		"signal": "session_data_reset",
-		"method": "_reset_internal_timer"
-	},
+	{"singleton": "NetworkManager", "signal": "network_process", "method": "_network_manager_process"},
+	{"singleton": "NetworkManager", "signal": "session_data_reset", "method": "_reset_internal_timer"},
 	{"singleton": "NetworkManager", "signal": "game_hosted", "method": "_game_hosted"},
-	{
-		"singleton": "NetworkManager",
-		"signal": "connection_succeeded",
-		"method": "_connected_to_server"
-	},
-	{
-		"singleton": "NetworkManager",
-		"signal": "server_peer_connected",
-		"method": "_server_peer_connected"
-	},
-	{
-		"singleton": "NetworkManager",
-		"signal": "server_peer_disconnected",
-		"method": "_server_peer_disconnected"
-	},
+	{"singleton": "NetworkManager", "signal": "connection_succeeded", "method": "_connected_to_server"},
+	{"singleton": "NetworkManager", "signal": "server_peer_connected", "method": "_server_peer_connected"},
+	{"singleton": "NetworkManager", "signal": "server_peer_disconnected", "method": "_server_peer_disconnected"},
 ]
 
-## 
-## 
-## 
+##
+##
+##
 
-## 
+##
 ## Server
-## 
+##
 
 
 func write_entity_update_command(p_entity: Object, p_network_writer: Object) -> Object:
-	p_network_writer = network_manager.network_entity_manager.write_entity_instance_id(
-		p_entity.network_identity_node.network_instance_id, p_network_writer
-	)
+	p_network_writer = network_manager.network_entity_manager.write_entity_instance_id(p_entity.network_identity_node.network_instance_id, p_network_writer)
 	var entity_state: Object = p_entity.network_identity_node.get_state(null, false)
 	var entity_state_size = entity_state.get_position()
 	if entity_state_size >= 0xffff:
@@ -111,22 +91,12 @@ func scrape_and_send_state_data(p_id: int, p_synced_peer: int, p_entities: Array
 						is_valid_entity = true
 
 				if is_valid_entity:
-					var entity_command_network_writer: Object = create_entity_command(
-						network_constants_const.UPDATE_ENTITY_COMMAND, entity
-					)
-					network_writer_state.put_writer(
-						entity_command_network_writer, entity_command_network_writer.get_position()
-					)
+					var entity_command_network_writer: Object = create_entity_command(network_constants_const.UPDATE_ENTITY_COMMAND, entity)
+					network_writer_state.put_writer(entity_command_network_writer, entity_command_network_writer.get_position())
 
 	if network_writer_state.get_position() > 0:
-		var raw_data: PackedByteArray = network_writer_state.get_raw_data(
-			network_writer_state.get_position()
-		)
-		network_manager.network_flow_manager.queue_packet_for_send(
-			ref_pool_const.new(raw_data),
-			p_synced_peer,
-			MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED
-		)
+		var raw_data: PackedByteArray = network_writer_state.get_raw_data(network_writer_state.get_position())
+		network_manager.network_flow_manager.queue_packet_for_send(ref_pool_const.new(raw_data), p_synced_peer, MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED)
 
 
 func _network_manager_process(p_id: int, _delta: float) -> void:
@@ -143,9 +113,9 @@ func _network_manager_process(p_id: int, _delta: float) -> void:
 			time_until_next_send = time_passed + CLIENT_PACKET_SEND_RATE
 
 
-## 
+##
 ## Client
-## 
+##
 
 
 func decode_entity_update_command(p_packet_sender_id: int, p_network_reader: Object) -> Object:
@@ -165,45 +135,31 @@ func decode_entity_update_command(p_packet_sender_id: int, p_network_reader: Obj
 		var network_identity_instance: Node = network_entity_manager.network_instance_ids[instance_id]
 		var network_instance_master: int = network_identity_instance.get_multiplayer_authority()
 		var invalid_sender_id = false
-		if ! network_manager.is_relay():
+		if !network_manager.is_relay():
 			# Only the server will accept state updates for entities directly and other clients will accept them from the host
 			if (
 				(network_manager.is_server() and network_instance_master == p_packet_sender_id)
-				or (
-					(
-						p_packet_sender_id
-						== network_constants_const.SERVER_MASTER_PEER_ID
-					)
-					and network_instance_master != network_manager.get_current_peer_id()
-				)
+				or ((p_packet_sender_id == network_constants_const.SERVER_MASTER_PEER_ID) and network_instance_master != network_manager.get_current_peer_id())
 			):
 				network_identity_instance.update_state(p_network_reader, false)
 			else:
 				invalid_sender_id = true
 		else:
 			# In a non-authoritive context, everyone is responsible for their own state updates, though the server can override
-			if (
-				network_instance_master == p_packet_sender_id
-				or (
-					p_packet_sender_id
-					== network_constants_const.SERVER_MASTER_PEER_ID
-				)
-			):
+			if network_instance_master == p_packet_sender_id or (p_packet_sender_id == network_constants_const.SERVER_MASTER_PEER_ID):
 				network_identity_instance.update_state(p_network_reader, false)
 			else:
 				invalid_sender_id = true
 
 		if invalid_sender_id:
-			NetworkLogger.error("Invalid state update sender id {packet_sender_id}!".format({"packet_sender_id":str(p_packet_sender_id)}))
+			NetworkLogger.error("Invalid state update sender id {packet_sender_id}!".format({"packet_sender_id": str(p_packet_sender_id)}))
 	else:
 		p_network_reader.seek(p_network_reader.get_position() + entity_state_size)
 
 	return p_network_reader
 
 
-func decode_state_buffer(
-	p_packet_sender_id: int, p_network_reader: Object, p_command: int
-) -> Object:
+func decode_state_buffer(p_packet_sender_id: int, p_network_reader: Object, p_command: int) -> Object:
 	match p_command:
 		network_constants_const.UPDATE_ENTITY_COMMAND:
 			p_network_reader = decode_entity_update_command(p_packet_sender_id, p_network_reader)
@@ -229,7 +185,7 @@ func _server_peer_connected(p_id: int) -> void:
 
 
 func _server_peer_disconnected(p_id: int) -> void:
-	if ! state_writers.erase(p_id):
+	if !state_writers.erase(p_id):
 		NetworkLogger.error("network_state_manager: attempted disconnect invalid peer!")
 
 
@@ -246,5 +202,5 @@ func is_command_valid(p_command: int) -> bool:
 
 
 func _ready() -> void:
-	if ! Engine.is_editor_hint():
+	if !Engine.is_editor_hint():
 		$"/root/ConnectionUtil".connect_signal_table(signal_table, self)

@@ -1,7 +1,6 @@
 @tool
 class_name NetworkHierarchy extends NetworkLogic
 
-
 const network_entity_manager_const = preload("res://addons/network_manager/network_entity_manager.gd")
 
 var parent_id: int = network_entity_manager_const.NULL_NETWORK_INSTANCE_ID
@@ -68,7 +67,7 @@ func serialize_hierarchy(p_writer: Object) -> Object:
 func on_serialize(p_writer: Object, p_initial_state: bool) -> Object:
 	if p_initial_state:
 		pass
-		
+
 	# Hierarchy
 	p_writer = serialize_hierarchy(p_writer)
 
@@ -81,10 +80,10 @@ func deserialize_hierarchy(p_reader: Object, p_initial_state: bool) -> Object:
 		if sync_attachment:
 			if parent_id != network_entity_manager_const.NULL_NETWORK_INSTANCE_ID:
 				attachment_id = read_entity_attachment_id(p_reader)
-			
-		if ! p_initial_state:
+
+		if !p_initial_state:
 			process_parenting()
-	
+
 	return p_reader
 
 
@@ -93,7 +92,7 @@ func on_deserialize(p_reader: Object, p_initial_state: bool) -> Object:
 
 	# Hierarchy
 	p_reader = deserialize_hierarchy(p_reader, p_initial_state)
-	
+
 	return p_reader
 
 
@@ -102,9 +101,7 @@ func process_parenting():
 		get_entity_node().hierarchy_component_node.parent_entity_is_valid = true
 		if parent_id != network_entity_manager_const.NULL_NETWORK_INSTANCE_ID:
 			if NetworkManager.network_entity_manager.network_instance_ids.has(parent_id):
-				var network_identity: Node = NetworkManager.network_entity_manager.get_network_identity_for_instance_id(
-					parent_id
-				)
+				var network_identity: Node = NetworkManager.network_entity_manager.get_network_identity_for_instance_id(parent_id)
 				if network_identity:
 					var parent_instance: Node = network_identity.get_entity_node()
 					if entity_node.hierarchy_component_node:
@@ -117,6 +114,7 @@ func process_parenting():
 			get_entity_node().hierarchy_component_node.parent_entity_is_valid = true
 			if entity_node.hierarchy_component_node:
 				entity_node.hierarchy_component_node.request_reparent_entity(null, attachment_id)
+
 
 func _entity_ready() -> void:
 	super._entity_ready()

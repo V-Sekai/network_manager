@@ -1,7 +1,8 @@
 @tool
 extends NetworkLogic
 
-func on_serialize(p_writer: Object, p_initial_state: bool) -> Object: # network_writer_const
+
+func on_serialize(p_writer: Object, p_initial_state: bool) -> Object:  # network_writer_const
 	if p_initial_state:
 		var path: String = entity_node.simulation_logic_node.get_model_path()
 		p_writer.put_8bit_pascal_string(path, true)
@@ -9,7 +10,7 @@ func on_serialize(p_writer: Object, p_initial_state: bool) -> Object: # network_
 	return p_writer
 
 
-func on_deserialize(p_reader: Object, p_initial_state: bool) -> Object: # network_reader_const
+func on_deserialize(p_reader: Object, p_initial_state: bool) -> Object:  # network_reader_const
 	received_data = true
 
 	if p_initial_state:
@@ -21,6 +22,6 @@ func on_deserialize(p_reader: Object, p_initial_state: bool) -> Object: # networ
 
 func _entity_ready() -> void:
 	super._entity_ready()
-	if ! Engine.is_editor_hint():
+	if !Engine.is_editor_hint():
 		if received_data:
 			pass

@@ -1,7 +1,6 @@
 @tool
 class_name NetworkLogic extends "res://addons/entity_manager/component_node.gd"
 
-
 const network_reader_const = preload("res://addons/network_manager/network_reader.gd")
 const network_writer_const = preload("res://addons/network_manager/network_writer.gd")
 
@@ -29,7 +28,7 @@ func is_dirty() -> bool:
 	return dirty_flag
 
 
-# Called when requesting entity state data be serialised. 
+# Called when requesting entity state data be serialised.
 # The p_writer is the network writer the data will be written
 # to. If null, data will be written to the cached writer.
 # The initial state flag indicates whether to request
@@ -51,7 +50,7 @@ func on_serialize(p_writer: Object, p_initial_state: bool) -> Object:
 	for child in get_children():
 		writer = child.on_serialize(writer, p_initial_state)
 
-	if ! p_initial_state:
+	if !p_initial_state:
 		set_dirty(false)
 
 	return writer
@@ -64,47 +63,50 @@ func on_serialize(p_writer: Object, p_initial_state: bool) -> Object:
 func on_deserialize(p_reader: Object, p_initial_state: bool) -> Object:
 	if p_reader == null:
 		return p_reader
-		
+
 	for child in get_children():
 		p_reader = child.on_deserialize(p_reader, p_initial_state)
-		
+
 	return p_reader
 
 
 func _threaded_instance_setup(p_instance_id: int, p_network_reader: RefCounted) -> void:
 	super._threaded_instance_setup(p_instance_id, p_network_reader)
-	
+
 	for child in get_children():
 		if child.has_method("_threaded_instance_setup"):
 			child._threaded_instance_setup(p_instance_id, p_network_reader)
 
+
 func _entity_physics_process(p_delta: float) -> void:
-	if ! Engine.is_editor_hint():
+	if !Engine.is_editor_hint():
 		for child in get_children():
 			if child.has_method("_entity_physics_process"):
 				child._entity_physics_process(p_delta)
 
+
 func _entity_representation_process(p_delta: float) -> void:
-	if ! Engine.is_editor_hint():
+	if !Engine.is_editor_hint():
 		for child in get_children():
 			if not child.has_method("_entity_representation_process"):
 				continue
 			child._entity_representation_process(p_delta)
 
- 
+
 func cache_nodes() -> void:
 	super.cache_nodes()
-	
+
 
 func _entity_ready() -> void:
 	cached_writer.resize(cached_writer_size)
-	
+
 	for child in get_children():
 		if child.has_method("_entity_ready"):
 			child._entity_ready()
-		
+
+
 func _entity_about_to_add() -> void:
-	if ! Engine.is_editor_hint():
+	if !Engine.is_editor_hint():
 		for child in get_children():
 			if child.has_method("_entity_about_to_add"):
 				child._entity_about_to_add()

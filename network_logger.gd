@@ -8,6 +8,7 @@ var message_error_func: Callable = Callable()
 func assign_printl_func(p_instance: Object, p_function: String) -> void:
 	message_printl_func = Callable(p_instance, p_function)
 
+
 func assign_error_func(p_instance: Object, p_function: String) -> void:
 	message_error_func = Callable(p_instance, p_function)
 

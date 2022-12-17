@@ -1,7 +1,6 @@
 class_name NetworkSpawn extends Marker3D
 
 
-
 func _enter_tree() -> void:
 	add_to_group("NetworkSpawnGroup")
 
