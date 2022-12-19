@@ -585,6 +585,8 @@ func _process(p_delta: float) -> void:
 				if is_server():
 					var peers: PackedInt32Array = get_connected_peers()
 					for peer in peers:
+						if peer < 0 or peer >= peer_data.size():
+							continue
 						peer_data[peer]["time_since_last_update_received"] += p_delta
 
 				if is_server() or client_state == network_constants_const.validation_state_enum.VALIDATION_STATE_SYNCED:
