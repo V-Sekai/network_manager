@@ -143,7 +143,7 @@ func get_next_network_id() -> int:
 # Registers an entity's network identity in the network_instance_id map
 # TODO: add more graceful error handling for exceeding maximum number of
 # entities
-func register_network_instance_id(p_network_instance_id: int, p_network_idenity: Node) -> void:
+func register_network_instance_id(p_network_instance_id: int, p_network_identity: Node) -> void:
 	var _mutex_lock: RefCounted = mutex_lock_const.new(_mutex)
 
 	NetworkLogger.printl("Attempting to register network instance_id {network_instance_id}".format({"network_instance_id": str(p_network_instance_id)}))
@@ -153,7 +153,7 @@ func register_network_instance_id(p_network_instance_id: int, p_network_idenity:
 		return
 
 	if !network_instance_ids.has(p_network_instance_id):
-		network_instance_ids[p_network_instance_id] = p_network_idenity
+		network_instance_ids[p_network_instance_id] = p_network_identity
 		network_manager.emit_entity_network_id_registered(p_network_instance_id)
 	else:
 		printerr("Attempted to register duplicate network instance_id")

@@ -38,19 +38,13 @@ func nm_rset_called(p_sender_id: int, p_property_id: int, p_value):
 	if p_property_id < keys.size() and p_property_id >= 0:
 		var property_name: String = keys[p_property_id]
 		var rpc_mode: int = virtual_rpc_property_table[property_name].rpc_mode
-		if rpc_mode == MultiplayerAPI.RPC_MODE_REMOTE or MultiplayerAPI.RPC_MODE_REMOTESYNC:
+		if rpc_mode == MultiplayerAPI.RPC_MODE_ANY_PEER:
 			set(property_name, p_value)
-		else:
+		elif rpc_mode == MultiplayerAPI.RPC_MODE_AUTHORITY:
 			if p_sender_id == get_multiplayer_authority():
-				if rpc_mode == MultiplayerAPI.RPC_MODE_PUPPET or MultiplayerAPI.RPC_MODE_PUPPETSYNC:
-					set(property_name, p_value)
-				else:
-					NetworkLogger.error("Cannot set {property_name} from peer {sender_id}!".format({"property_name": property_name, "sender_id": str(p_sender_id)}))
+				set(property_name, p_value)
 			else:
-				if rpc_mode == MultiplayerAPI.RPC_MODE_MASTER or MultiplayerAPI.RPC_MODE_MASTERSYNC:
-					set(property_name, p_value)
-				else:
-					NetworkLogger.error("Cannot set {property_name} from peer {sender_id}!".format({"property_name": property_name, "sender_id": str(p_sender_id)}))
+				NetworkLogger.error("Cannot set {property_name} from peer {sender_id}!".format({"property_name": property_name, "sender_id": str(p_sender_id)}))
 	else:
 		NetworkLogger.error("Cannot find property for id %s!" % str(p_property_id))
 
@@ -63,7 +57,7 @@ func _nm_rpcp(p_peer_id: int, p_unreliable: bool, p_method: String, p_arg_array:
 	for i in range(0, keys.size()):
 		if keys[i] == p_method:
 			var rpc_mode: int = virtual_rpc_method_table[p_method].rpc_mode
-			if rpc_mode == MultiplayerAPI.RPC_MODE_MASTERSYNC or MultiplayerAPI.RPC_MODE_PUPPETSYNC or MultiplayerAPI.RPC_MODE_REMOTESYNC:
+			if rpc_mode == MultiplayerAPI.RPC_MODE_ANY_PEER:
 				callv(p_method, p_arg_array)
 			method_id = i
 
@@ -82,7 +76,7 @@ func _nm_rsetp(p_peer_id: int, p_unreliable: bool, p_property: String, p_value):
 	for i in range(0, keys.size()):
 		if keys[i] == p_property:
 			var rpc_mode: int = virtual_rpc_property_table[p_property].rpc_mode
-			if rpc_mode == MultiplayerAPI.RPC_MODE_MASTERSYNC or MultiplayerAPI.RPC_MODE_PUPPETSYNC or MultiplayerAPI.RPC_MODE_REMOTESYNC:
+			if rpc_mode == MultiplayerAPI.RPC_MODE_ANY_PEER:
 				set(p_property, p_value)
 			property_id = i
 
