@@ -463,17 +463,17 @@ func emit_entity_network_id_unregistered(p_network_id: int) -> void:
 	entity_network_id_unregistered.emit(p_network_id)
 
 
-@rpc(any_peer) func send_create_server_info() -> void:
+@rpc("any_peer") func send_create_server_info() -> void:
 	NetworkLogger.printl("create_server_info...")
 	create_server_info.emit()
 
 
-@rpc(any_peer) func send_create_server_state() -> void:
+@rpc("any_peer") func send_create_server_state() -> void:
 	NetworkLogger.printl("create_server_state...")
 	create_server_state.emit()
 
 
-@rpc(any_peer) func peer_validation_state_error() -> void:
+@rpc("any_peer") func peer_validation_state_error() -> void:
 	NetworkLogger.printl("peer_validation_state_error...")
 	if is_server():
 		rpc("peer_validation_state_error")
