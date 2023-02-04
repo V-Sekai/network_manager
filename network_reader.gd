@@ -57,7 +57,9 @@ func get_24() -> int:
 		eof_reached = true
 		return 0
 
-	var value_buffer = PackedByteArray([stream_peer_buffer.get_8(), stream_peer_buffer.get_8(), stream_peer_buffer.get_8()])
+	var value_buffer = PackedByteArray(
+		[stream_peer_buffer.get_8(), stream_peer_buffer.get_8(), stream_peer_buffer.get_8()]
+	)
 	if stream_peer_buffer.big_endian:
 		value_buffer.reverse()
 

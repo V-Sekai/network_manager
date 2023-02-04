@@ -55,7 +55,9 @@ var reliable_packet_queue_time_sorted: Array = []
 var packet_peer_target: Dictionary = {}
 
 
-static func save_packet_data(p_file: FileAccess, p_sender_peer_id: int, p_target_peer_id: int, p_transfer_mode: int, p_packet: PackedByteArray) -> void:
+static func save_packet_data(
+	p_file: FileAccess, p_sender_peer_id: int, p_target_peer_id: int, p_transfer_mode: int, p_packet: PackedByteArray
+) -> void:
 	if LOG_SENT_DATA:
 		var transfer_mode_string: String = "?"
 		match p_transfer_mode:
@@ -67,7 +69,8 @@ static func save_packet_data(p_file: FileAccess, p_sender_peer_id: int, p_target
 				transfer_mode_string = "Reliable Ordered"
 
 		var send_data_report: String = (
-			"From: %s - Packet sent to: %s - Transfer Mode: %s - Data: %s" % [str(p_sender_peer_id), str(p_target_peer_id), transfer_mode_string, str(p_packet.hex_encode())]
+			"From: %s - Packet sent to: %s - Transfer Mode: %s - Data: %s"
+			% [str(p_sender_peer_id), str(p_target_peer_id), transfer_mode_string, str(p_packet.hex_encode())]
 		)
 		p_file.store_line(send_data_report)
 
@@ -88,15 +91,26 @@ func send_packet_queue(p_packet_queue: Array, p_transfer_mode: int):
 	if get_tree().get_multiplayer().get_multiplayer_peer():
 		get_tree().get_multiplayer().get_multiplayer_peer().set_transfer_mode(p_transfer_mode)
 		for packet in p_packet_queue:
-			if packet.id == network_constants_const.ALL_PEERS or packet.id == network_constants_const.SERVER_MASTER_PEER_ID or network_manager.peer_is_connected(packet.id):
-				var send_bytes_result: int = get_tree().get_multiplayer().send_bytes(packet.ref_pool.pool_byte_array, packet.id, p_transfer_mode)
+			if (
+				packet.id == network_constants_const.ALL_PEERS
+				or packet.id == network_constants_const.SERVER_MASTER_PEER_ID
+				or network_manager.peer_is_connected(packet.id)
+			):
+				var send_bytes_result: int = get_tree().get_multiplayer().send_bytes(
+					packet.ref_pool.pool_byte_array, packet.id, p_transfer_mode
+				)
 				if send_bytes_result != OK:
-					NetworkLogger.error("Send bytes error: {send_bytes_result}".format({"send_bytes_result": str(send_bytes_result)}))
+					NetworkLogger.error(
+						"Send bytes error: {send_bytes_result}".format({"send_bytes_result": str(send_bytes_result)})
+					)
 				else:
 					if LOG_SENT_DATA:
-						(
-							network_flow_manager_const
-							. save_packet_data(sent_data_file, network_manager.get_current_peer_id(), packet.id, p_transfer_mode, packet.ref_pool.pool_byte_array)
+						network_flow_manager_const.save_packet_data(
+							sent_data_file,
+							network_manager.get_current_peer_id(),
+							packet.id,
+							p_transfer_mode,
+							packet.ref_pool.pool_byte_array
 						)
 
 
@@ -116,7 +130,9 @@ func ordered_inserted(p_packet: RefCounted, p_time_sorted_queue: Array, p_packet
 		p_time_sorted_queue.append(p_packet)
 
 
-func setup_and_send_ordered_queue(p_time: float, p_queue: Array, p_time_sorted_queue: Array, p_transfer_mode: int) -> Array:
+func setup_and_send_ordered_queue(
+	p_time: float, p_queue: Array, p_time_sorted_queue: Array, p_transfer_mode: int
+) -> Array:
 	for packet in p_queue:
 		if p_transfer_mode != MultiplayerPeer.TRANSFER_MODE_RELIABLE:
 			if randf() < drop_rate:
@@ -137,7 +153,9 @@ func setup_and_send_ordered_queue(p_time: float, p_queue: Array, p_time_sorted_q
 				var latest_time: float = 0.0
 				if p_time_sorted_queue.size() > 0:
 					latest_time = p_time_sorted_queue.back().time
-				p_time_sorted_queue.append(PendingPacketTimed.new(packet.id, packet.ref_pool, max(latest_time, first_packet_time)))
+				p_time_sorted_queue.append(
+					PendingPacketTimed.new(packet.id, packet.ref_pool, max(latest_time, first_packet_time))
+				)
 
 		while randf() < dup_rate:
 			var dup_packet_time: float = p_time + min_latency + randf() * (max_latency - min_latency)
@@ -157,15 +175,26 @@ func setup_and_send_ordered_queue(p_time: float, p_queue: Array, p_time_sorted_q
 		if p_time >= packet.time:
 			var index: int = p_time_sorted_queue.find(packet)
 			assert(index >= 0)
-			if packet.id == network_constants_const.ALL_PEERS or packet.id == network_constants_const.SERVER_MASTER_PEER_ID or network_manager.peer_is_connected(packet.id):
-				var send_bytes_result: int = get_tree().get_multiplayer().send_bytes(packet.ref_pool.pool_byte_array, packet.id, p_transfer_mode)
+			if (
+				packet.id == network_constants_const.ALL_PEERS
+				or packet.id == network_constants_const.SERVER_MASTER_PEER_ID
+				or network_manager.peer_is_connected(packet.id)
+			):
+				var send_bytes_result: int = get_tree().get_multiplayer().send_bytes(
+					packet.ref_pool.pool_byte_array, packet.id, p_transfer_mode
+				)
 				if send_bytes_result != OK:
-					NetworkLogger.error("Send bytes error: {send_bytes_result}".format({"send_bytes_result": str(send_bytes_result)}))
+					NetworkLogger.error(
+						"Send bytes error: {send_bytes_result}".format({"send_bytes_result": str(send_bytes_result)})
+					)
 				else:
 					if LOG_SENT_DATA:
-						(
-							network_flow_manager_const
-							. save_packet_data(sent_data_file, network_manager.get_current_peer_id(), packet.id, p_transfer_mode, packet.ref_pool.pool_byte_array)
+						network_flow_manager_const.save_packet_data(
+							sent_data_file,
+							network_manager.get_current_peer_id(),
+							packet.id,
+							p_transfer_mode,
+							packet.ref_pool.pool_byte_array
 						)
 
 			p_time_sorted_queue.remove_at(index)
@@ -178,13 +207,22 @@ func process_network_packets(p_delta: float) -> void:
 
 	if simulate_network_conditions:
 		reliable_packet_queue_time_sorted = setup_and_send_ordered_queue(
-			internal_timer, reliable_packet_queue, reliable_packet_queue_time_sorted, MultiplayerPeer.TRANSFER_MODE_RELIABLE
+			internal_timer,
+			reliable_packet_queue,
+			reliable_packet_queue_time_sorted,
+			MultiplayerPeer.TRANSFER_MODE_RELIABLE
 		)
 		unreliable_packet_queue_time_sorted = setup_and_send_ordered_queue(
-			internal_timer, unreliable_packet_queue, unreliable_packet_queue_time_sorted, MultiplayerPeer.TRANSFER_MODE_UNRELIABLE
+			internal_timer,
+			unreliable_packet_queue,
+			unreliable_packet_queue_time_sorted,
+			MultiplayerPeer.TRANSFER_MODE_UNRELIABLE
 		)
 		unreliable_ordered_packet_queue_time_sorted = setup_and_send_ordered_queue(
-			internal_timer, unreliable_ordered_packet_queue, unreliable_ordered_packet_queue_time_sorted, MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED
+			internal_timer,
+			unreliable_ordered_packet_queue,
+			unreliable_ordered_packet_queue_time_sorted,
+			MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED
 		)
 	else:
 		send_packet_queue(reliable_packet_queue, MultiplayerPeer.TRANSFER_MODE_RELIABLE)
@@ -216,13 +254,17 @@ func _ready() -> void:
 	if LOG_SENT_DATA:
 		var datetime: Dictionary = Time.get_datetime_dict_from_system(true)
 
-		sent_data_file = (
-			FileAccess
-			. open(
-				(
-					"user://sent_data_file_%s_%s_%s_%s_%s_%s"
-					% [str(datetime.year), str(datetime.month), str(datetime.day), str(datetime.hour), str(datetime.minute), str(datetime.second)]
-				),
-				FileAccess.WRITE
-			)
-		)
+		sent_data_file = (FileAccess.open(
+			(
+				"user://sent_data_file_%s_%s_%s_%s_%s_%s"
+				% [
+					str(datetime.year),
+					str(datetime.month),
+					str(datetime.day),
+					str(datetime.hour),
+					str(datetime.minute),
+					str(datetime.second)
+				]
+			),
+			FileAccess.WRITE
+		))

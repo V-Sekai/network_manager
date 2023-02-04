@@ -189,7 +189,11 @@ func _peer_packet(p_id: int, p_packet: PackedByteArray) -> void:
 
 func has_active_peer() -> bool:
 	return (
-		get_tree().get_multiplayer().has_multiplayer_peer() and (get_tree().get_multiplayer().multiplayer_peer.get_connection_status() != MultiplayerPeer.CONNECTION_DISCONNECTED)
+		get_tree().get_multiplayer().has_multiplayer_peer()
+		and (
+			get_tree().get_multiplayer().multiplayer_peer.get_connection_status()
+			!= MultiplayerPeer.CONNECTION_DISCONNECTED
+		)
 	)
 
 
@@ -267,9 +271,10 @@ func host_game(p_port: int, p_max_players: int, p_dedicated: bool, p_relay: bool
 	var retry_count: int = 0
 	while net.create_server(active_port, max_players) != OK:
 		if (retry_count % 10) == 0:
-			(
-				NetworkLogger
-				. printl("Cannot create a server on port {port}! (Try {try}/{trymax})".format({"port": str(active_port), "try": str(retry_count), "trymax": str(p_retry_max)}))
+			NetworkLogger.printl(
+				"Cannot create a server on port {port}! (Try {try}/{trymax})".format(
+					{"port": str(active_port), "try": str(retry_count), "trymax": str(p_retry_max)}
+				)
 			)
 		retry_count += 1
 		if retry_count > p_retry_max:
@@ -303,7 +308,9 @@ func join_game(p_ip: String, p_port: int) -> bool:
 		return false
 
 	if net.create_client(p_ip, p_port) != OK:
-		NetworkLogger.printl("Cannot create a client on ip {ip} & port {port}!".format({"ip": p_ip, "port": str(p_port)}))
+		NetworkLogger.printl(
+			"Cannot create a client on ip {ip} & port {port}!".format({"ip": p_ip, "port": str(p_port)})
+		)
 		return false
 
 	active_ip = p_ip
@@ -487,10 +494,15 @@ func emit_entity_network_id_unregistered(p_network_id: int) -> void:
 
 func confirm_client_ready_for_sync(p_network_id: int) -> void:
 	NetworkLogger.printl("confirm_client_ready_for_sync...")
-	if peer_data[p_network_id].validation_state != network_constants_const.validation_state_enum.VALIDATION_STATE_STATE_SENT:
+	if (
+		peer_data[p_network_id].validation_state
+		!= network_constants_const.validation_state_enum.VALIDATION_STATE_STATE_SENT
+	):
 		peer_validation_state_error()
 	else:
-		received_peer_validation_state_update(p_network_id, network_constants_const.validation_state_enum.VALIDATION_STATE_SYNCED)
+		received_peer_validation_state_update(
+			p_network_id, network_constants_const.validation_state_enum.VALIDATION_STATE_SYNCED
+		)
 
 		active_peers.push_back(p_network_id)
 
@@ -549,7 +561,11 @@ func decode_buffer(p_id: int, p_buffer: PackedByteArray) -> void:
 				var command_string: String = network_constants_const.get_string_for_command(command)
 				var command_size: int = end_position - start_position
 
-				LogManager.printl("Processed {command_string}: {command_size} bytes".format({"command_string": command_string, "command_size": str(command_size)}))
+				LogManager.printl(
+					"Processed {command_string}: {command_size} bytes".format(
+						{"command_string": command_string, "command_size": str(command_size)}
+					)
+				)
 			else:
 				NetworkLogger.printl("Processed NULL")
 
@@ -562,10 +578,9 @@ func decode_buffer(p_id: int, p_buffer: PackedByteArray) -> void:
 
 	if OS.is_stdout_verbose() and network_reader_orig:
 		var size: int = network_reader_orig.get_position()
-		(
-			LogManager
-			. printl(
-				"--- Finished processing packet {count} from peer {id}, packet size: {size} ---".format({"count": received_packet_buffer_count[p_id], "id": p_id, "size": size})
+		LogManager.printl(
+			"--- Finished processing packet {count} from peer {id}, packet size: {size} ---".format(
+				{"count": received_packet_buffer_count[p_id], "id": p_id, "size": size}
 			)
 		)
 
@@ -630,7 +645,9 @@ func get_network_scene_paths() -> Array:
 
 func client_request_server_info(p_client_info: Dictionary) -> void:
 	requesting_server_info.emit()
-	network_handshake_manager.rpc_id(network_constants_const.SERVER_MASTER_PEER_ID, &"requested_server_info", p_client_info)
+	network_handshake_manager.rpc_id(
+		network_constants_const.SERVER_MASTER_PEER_ID, &"requested_server_info", p_client_info
+	)
 
 
 func client_request_server_state(_client_state: Dictionary) -> void:
@@ -652,7 +669,9 @@ func server_send_client_info(p_network_id: int, p_client_id: int, p_client_info:
 
 func register_peer(p_id) -> void:
 	peer_data[p_id] = {
-		"validation_state": network_constants_const.validation_state_enum.VALIDATION_STATE_NONE, "time_since_last_update_received": 0.0, "time_since_last_update_sent": 0.0
+		"validation_state": network_constants_const.validation_state_enum.VALIDATION_STATE_NONE,
+		"time_since_last_update_received": 0.0,
+		"time_since_last_update_sent": 0.0
 	}
 
 	NetworkLogger.printl("peer_registered:{id}".format({"id": str(p_id)}))
@@ -690,7 +709,10 @@ func setup_project_settings() -> void:
 		ProjectSettings.set_setting("network/config/compression_mode", compression_mode)
 
 		var compression_mode_property_info: Dictionary = {
-			"name": "network/config/compression_mode", "type": TYPE_INT, "hint": PROPERTY_HINT_ENUM, "hint_string": "None,Range Coder,FastLZ,zlib,Zstandard"
+			"name": "network/config/compression_mode",
+			"type": TYPE_INT,
+			"hint": PROPERTY_HINT_ENUM,
+			"hint_string": "None,Range Coder,FastLZ,zlib,Zstandard"
 		}
 
 		ProjectSettings.add_property_info(compression_mode_property_info)
@@ -725,8 +747,13 @@ func _ready():
 	if !Engine.is_editor_hint():
 		network_process_frame_timeslice = 1.0 / network_fps
 		for current_signal in multiplayer_signal_table:
-			if get_tree().get_multiplayer().connect(current_signal["signal"], Callable(self, current_signal.method)) != 0:
-				NetworkLogger.error("NetworkManager: {signal} could not be connected!".format({"signal": str(current_signal["signal"])}))
+			if (
+				get_tree().get_multiplayer().connect(current_signal["signal"], Callable(self, current_signal.method))
+				!= 0
+			):
+				NetworkLogger.error(
+					"NetworkManager: {signal} could not be connected!".format({"signal": str(current_signal["signal"])})
+				)
 
 
 func _enter_tree() -> void:
