@@ -37,7 +37,6 @@ const network_replication_manager_const = preload("network_replication_manager.g
 const network_state_manager_const = preload("network_state_manager.gd")
 const network_voice_manager_const = preload("network_voice_manager.gd")
 const network_entity_manager_const = preload("res://addons/network_manager/network_entity_manager.gd")
-const network_flow_manager_const = preload("network_flow_manager.gd")
 const network_handshake_manager_const = preload("network_handshake_manager.gd")
 const network_rpc_manager_const = preload("network_rpc_manager.gd")
 
@@ -336,8 +335,6 @@ func reset_session_data() -> void:
 	session_master = -1
 	server_dedicated = false
 
-	network_flow_manager.reset()
-
 	session_data_reset.emit()
 
 
@@ -563,10 +560,6 @@ func decode_buffer(p_id: int, p_buffer: PackedByteArray) -> void:
 			else:
 				NetworkLogger.printl("Processed NULL")
 
-	###EntityManager.scene_tree_execution_table.call_deferred(
-	###	"_execute_scene_tree_execution_table_unsafe"
-	###)
-
 	if !received_packet_buffer_count.has(p_id):
 		received_packet_buffer_count[p_id] = 0
 
@@ -758,9 +751,6 @@ func _init():
 
 	network_entity_manager = network_entity_manager_const.new(self)
 	network_entity_manager.set_name("NetworkEntityManager")
-
-	network_flow_manager = network_flow_manager_const.new(self)
-	network_flow_manager.set_name("NetworkFlowManager")
 
 	network_handshake_manager = network_handshake_manager_const.new(self)
 	network_handshake_manager.set_name("NetworkHandshakeManager")
