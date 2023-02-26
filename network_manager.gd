@@ -51,8 +51,6 @@ var network_flow_manager: Node = null
 var network_handshake_manager: Node = null
 var network_rpc_manager: Node = null
 
-var compression_mode: int = ENetConnection.COMPRESS_ZSTD
-
 var received_packet_buffer_count: Dictionary = {}
 
 var entity_root_node_path: NodePath = NodePath()
@@ -703,21 +701,6 @@ func setup_project_settings() -> void:
 		entity_root_node_path = NodePath(ProjectSettings.get_setting("network/config/entity_root_node"))
 	else:
 		ProjectSettings.set_setting("network/config/entity_root_node", entity_root_node_path)
-		should_save = true
-
-	if !ProjectSettings.has_setting("network/config/compression_mode"):
-		ProjectSettings.set_setting("network/config/compression_mode", compression_mode)
-
-		var compression_mode_property_info: Dictionary = {
-			"name": "network/config/compression_mode",
-			"type": TYPE_INT,
-			"hint": PROPERTY_HINT_ENUM,
-			"hint_string": "None,Range Coder,FastLZ,zlib,Zstandard"
-		}
-
-		ProjectSettings.add_property_info(compression_mode_property_info)
-	else:
-		compression_mode = ProjectSettings.get_setting("network/config/compression_mode")
 		should_save = true
 
 	if !ProjectSettings.has_setting("network/config/default_port"):
