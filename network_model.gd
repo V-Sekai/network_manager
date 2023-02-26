@@ -22,6 +22,3 @@ func on_deserialize(p_reader: Object, p_initial_state: bool) -> Object:  # netwo
 
 func _entity_ready() -> void:
 	super._entity_ready()
-	if !Engine.is_editor_hint():
-		if received_data:
-			pass

@@ -563,10 +563,6 @@ func decode_buffer(p_id: int, p_buffer: PackedByteArray) -> void:
 			else:
 				NetworkLogger.printl("Processed NULL")
 
-	###EntityManager.scene_tree_execution_table.call_deferred(
-	###	"_execute_scene_tree_execution_table_unsafe"
-	###)
-
 	if !received_packet_buffer_count.has(p_id):
 		received_packet_buffer_count[p_id] = 0
 
